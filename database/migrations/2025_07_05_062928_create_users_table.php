@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name')->index();
             $table->string('email')->unique();
-            $table->foreignId('position_id')->nullable()->constrained('positions')->nullOnDelete();
-            $table->foreignId('department_id')->nullable()->constrained('departments')->nullOnDelete();
+            $table->enum('position',array_values(config('positions')))->nullable();
+            $table->enum('department',array_values(config('departments')))->nullable();
 
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->enum('role', config('roles.roles'))->default('client');
+            $table->enum('role', array_values(config('roles')))->default(config('roles.client'));
 
 
             $table->timestamp('email_verified_at')->nullable();
