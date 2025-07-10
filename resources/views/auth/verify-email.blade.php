@@ -1,4 +1,4 @@
-<x-guest-layout>
+{{-- <x-guest-layout>
     <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
         {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
     </div>
@@ -28,4 +28,30 @@
             </button>
         </form>
     </div>
-</x-guest-layout>
+</x-guest-layout> --}}
+
+@extends('layouts.auth')
+
+@section('auth_title', 'Verification Email')
+@section('auth_color', 'info')
+@section('auth_header_message','A new verification link has been sent to the email address you provided during registration.')
+
+@section('auth_content')
+    <form action="{{ route('verification.send') }}" method="POST">
+        @csrf
+        {{-- action resend email --}}
+        <div class="w-100 d-flex mb-3 justify-content-center">
+            <button type="submit" class="btn btn-warning w-50">Resend Email</button>
+        </div>
+    </form>
+    <form action="{{ route('logout') }}" method="POST">
+        @csrf
+        {{-- action resend email --}}
+        <div class="w-100 d-flex mb-3 justify-content-center">
+            <button type="submit" class="btn btn-outline-info w-50">Log Out</button>
+        </div>
+    </form>
+@endsection
+
+
+

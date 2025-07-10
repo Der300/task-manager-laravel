@@ -1,25 +1,36 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+@extends('layouts.auth')
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@section('auth_title', 'Forgot password')
+@section('auth_color', 'warning')
+@section('auth_header_message', 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.')
 
-    <form method="POST" action="{{ route('password.email') }}">
+@section('auth_content')
+    <form action="{{ route('password.email') }}" method="POST">
         @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        {{-- email --}}
+        <div class="form-group auth-wrapper">
+            <input type="text" name="email" id="email" value="{{old('email')}}" class="form-control input" autocomplete="TRUE" placeholder=""
+                required autofocus>
+            <label for="email" class="label">Email for reset password</label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
+        {{-- action --}}
+        <div class="w-100 d-flex mb-3 justify-content-center">
+            <button type="submit" class="btn btn-warning w-50">Send Reset Link</button>
         </div>
+
+        {{-- hien thi status/error --}}
+        @if (session('status'))
+            <div class="alert alert-success">
+                {{ session('status') }}
+            </div>
+        @endif
+        @error('email')
+            <div class="alert alert-danger">
+                {{ $message }}
+            </div>
+        @enderror
     </form>
-</x-guest-layout>
+@endsection
+
+

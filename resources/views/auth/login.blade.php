@@ -1,47 +1,47 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.auth')
 
-    <form method="POST" action="{{ route('login') }}">
+@section('auth_title', 'Login')
+@section('auth_color', 'primary')
+@section('auth_content')
+    <form action="{{ route('login') }}" method="POST">
         @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        {{-- email --}}
+        <div class="form-group auth-wrapper">
+            <input type="text" name="email" id="email" class="form-control input" autocomplete="TRUE" placeholder=""
+                autofocus required>
+            <label for="email" class="label">Email</label>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        {{-- password --}}
+        <div class="form-group auth-wrapper">
+            <input type="password" name="password" id="password" class="form-control input" autocomplete="TRUE"
+                placeholder="" required>
+            <label for="password" class="label">Password</label>
+            <span class="toggle-password" onclick="togglePassword()">
+                <i class="fa fa-eye-slash icon" aria-hidden="true" id="eye-icon-password"></i>
+            </span>
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
+        {{-- remember --}}
+        <div class="d-flex align-items-center">
+            <input name="remember" id="remember" class="mr-2" type="checkbox"
+                style="margin-top: 3px; font-size:20px; transform: scale(1.5);">
+            <label for="remember" class="m-0 text-white"> Remember me</label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+        {{-- action --}}
+        <div class="d-flex align-items-center auth-wrapper justify-content-center flex-wrap">
+            <button type="submit" class="btn btn-primary w-50">
+                Login
+            </button>
+            <a href="{{ route('password.request') }}" class="w-50 text-center text-light">Forgot your password?</a>
         </div>
+
+        {{-- hien thi error --}}
+        @if ($errors->has('email') || $errors->has('password'))
+            <div class="alert alert-danger">
+                {{ $errors->first('email') ?: $errors->first('password') }}
+            </div>
+        @endif
     </form>
-</x-guest-layout>
+@endsection
