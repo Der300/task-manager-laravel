@@ -25,6 +25,16 @@ class UserFactory extends Factory
     protected static $restDepartments;
     protected static $restRoles;
 
+    protected function createImage(string $name): string
+    {
+        $nameWithoutSpace = str_replace('-', '', Str::slug($name));
+        $imageName = 'avatar_' . $nameWithoutSpace . '.svg';
+        $avatarUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" . urlencode($nameWithoutSpace);
+        file_put_contents(public_path('images/users/' . $imageName), file_get_contents($avatarUrl));
+
+        return $imageName;
+    }
+
     public function definition(): array
     {
         if (!self::$restRoles) {
@@ -39,8 +49,10 @@ class UserFactory extends Factory
 
         $name = $this->faker->unique()->name;
         $email = str_replace('-', '', Str::slug($name)) . '@example.com';
+
         return [
             'name' => $name,
+            'image' => null,
             'email' => $email,
             'role' => $this->faker->randomElement(self::$restRoles),
             'status' => $this->faker->randomElement(['active', 'inactive']),
@@ -53,14 +65,16 @@ class UserFactory extends Factory
 
     public function addSuperAdmin()
     {
+        $name = 'Super Admin';
+        $imageName = $this->createImage($name);
         return $this->state([
-            'name' => 'Super Admin',
+            'name' =>  $name,
+            'image' =>  $imageName,
             'email' => 'superadmin@example.com',
             'role' => config('roles.super_admin'),
             'status' => 'active',
             'position' => config('positions.admin'),
             'department' => config('departments.management'),
-            'email_verified_at' => now(),
             'password' => Hash::make('superadmin12345'),
         ]);
     }
@@ -68,8 +82,10 @@ class UserFactory extends Factory
     public function addAdmin(string $name)
     {
         $email = str_replace('-', '', Str::slug($name)) . uniqid() . '@example.com';
+        $imageName = $this->createImage($name);
         return $this->state([
-            'name' => $name,
+            'name' =>  $name,
+            'image' =>  $imageName,
             'email' =>  $email,
             'role' => config('roles.admin'),
             'status' => 'active',
@@ -82,46 +98,55 @@ class UserFactory extends Factory
 
     public function addCEO()
     {
+        $name = 'CEO';
+        $imageName = $this->createImage($name);
         return $this->state([
-            'name' => 'CEO',
+            'name' =>  $name,
+            'image' =>  $imageName,
             'email' => 'ceo@example.com',
             'role' => config('roles.admin'),
             'status' => 'active',
             'position' => config('positions.ceo'),
             'department' => config('departments.management'),
-            'email_verified_at' => now(),
             'password' => Hash::make('ceo12345'),
         ]);
     }
 
     public function addSecretaryCEO()
     {
+       $name = 'Secretary';
+        $imageName = $this->createImage($name);
         return $this->state([
-            'name' => 'Secretary',
+            'name' =>  $name,
+            'image' =>  $imageName,
             'email' => 'secretary@example.com',
             'role' => config('roles.admin'),
             'status' => 'active',
             'position' => config('positions.secretary_to_ceo'),
             'department' => config('departments.management'),
-            'email_verified_at' => now(),
             'password' => Hash::make('secretary12345'),
         ]);
     }
 
     public function addClient(): self
     {
-        return $this->state(function () {
-            $name = $this->faker->unique()->name;
-            $email = str_replace('-', '', Str::slug($name)) . '@example.com';
+        return $this->state(function (array $attributes) {
+            $imageName = $this->createImage($attributes['name']);
             return [
-                'name' => $name,
-                'email' => $email,
+                'image'=>$imageName,
                 'role' => config('roles.client'),
-                'status' => $this->faker->randomElement(['active', 'inactive']),
                 'position' => null,
                 'department' => null,
-                'email_verified_at' => now(),
                 'password' => Hash::make('client12345'),
+            ];
+        });
+    }
+
+    public function addNormalUser():self{
+        return $this->state(function (array $attributes){
+            $imageName = $this->createImage($attributes['name']);
+            return[
+                'image'=>$imageName,
             ];
         });
     }
