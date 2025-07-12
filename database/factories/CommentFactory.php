@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Comment\Comment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +15,6 @@ class CommentFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    protected $model = Comment::class;
 
     protected static $commentTemplates;
     protected static $userIds;

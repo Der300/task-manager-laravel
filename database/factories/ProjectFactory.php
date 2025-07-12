@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
-use App\Models\Project\Project;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Project>
@@ -16,7 +15,6 @@ class ProjectFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    protected $model = Project::class;
 
     protected static $projectTemplates;
 

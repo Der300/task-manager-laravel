@@ -21,14 +21,14 @@ class StatusSeeder extends Seeder
                 'code' => 'open',
                 'description' => 'The task has been created and is awaiting processing.',
                 'order' => 1,
-                'color' => '#3498db', // blue
+                'color' => '#3498db', 
             ],
             [
                 'name' => 'In Progress',
                 'code' => 'in_progress',
                 'description' => 'The task is currently being worked on.',
                 'order' => 2,
-                'color' => '#f1c40f', // yellow
+                'color' => '#fec007', 
             ],
             [
                 'name' => 'In Review',
@@ -42,14 +42,21 @@ class StatusSeeder extends Seeder
                 'code' => 'done',
                 'description' => 'The task has been completed successfully.',
                 'order' => 4,
-                'color' => '#2ecc71', // green
+                'color' => '#27a844', // green
             ],
             [
                 'name' => 'Cancel',
                 'code' => 'cancel',
                 'description' => 'The task has been cancelled and will not be completed.',
                 'order' => 5,
-                'color' => '#e74c3c', // red
+                'color' => '#525a45', // brown
+            ],
+            [
+                'name' => 'Pending',
+                'code' => 'pending',
+                'description' => 'The task has been delayed and will be completed later.',
+                'order' => 5,
+                'color' => '#525a45', // red
             ],
         ]);
     }
