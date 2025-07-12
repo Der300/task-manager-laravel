@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\User\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -18,7 +17,6 @@ class UserFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    protected $model = User::class;
 
     // Các biến static này chỉ khởi tạo 1 lần duy nhất khi factory chạy, giúp tránh lặp lại việc lấy và loại các giá trị từ config
     protected static $restPositions;

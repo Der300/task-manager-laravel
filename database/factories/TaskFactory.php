@@ -2,11 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Task\Task;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
-
-use function PHPUnit\Framework\isNull;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Task>
@@ -18,8 +15,6 @@ class TaskFactory extends Factory
      *
      * @return array<string, mixed>
      */
-
-    protected $model = Task::class;
 
     protected static $statusIds;
     protected static $issueTypeIds;

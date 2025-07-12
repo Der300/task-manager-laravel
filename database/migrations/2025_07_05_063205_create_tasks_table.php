@@ -25,6 +25,7 @@ return new class extends Migration
 
             $table->date('start_date')->nullable();
             $table->date('due_date')->nullable()->index();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
