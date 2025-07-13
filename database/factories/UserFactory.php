@@ -36,7 +36,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         if (!self::$restRoles) {
-            self::$restRoles = array_values(Arr::except(config('roles'), ['super-admin', 'admin', 'client'])); // khong lay super-admin', 'admin, client
+            self::$restRoles = array_values(Arr::except(config('acl.roles'), ['super-admin', 'admin', 'client'])); // khong lay super-admin', 'admin, client
         }
         if (!self::$restPositions) {
             self::$restPositions = array_values(Arr::except(config('positions'), ['administration', 'ceo', 'secretary_to_ceo'])); // khong lay ['administration', 'ceo','secretary_to_ceo']
@@ -69,7 +69,7 @@ class UserFactory extends Factory
             'name' =>  $name,
             'image' =>  $imageName,
             'email' => 'superadmin@example.com',
-            'role' => config('roles.super_admin'),
+            'role' => config('acl.roles.super_admin'),
             'status' => 'active',
             'position' => config('positions.admin'),
             'department' => config('departments.management'),
@@ -85,7 +85,7 @@ class UserFactory extends Factory
             'name' =>  $name,
             'image' =>  $imageName,
             'email' =>  $email,
-            'role' => config('roles.admin'),
+            'role' => config('acl.roles.admin'),
             'status' => 'active',
             'position' => config('positions.admin'),
             'department' => config('departments.management'),
@@ -102,7 +102,7 @@ class UserFactory extends Factory
             'name' =>  $name,
             'image' =>  $imageName,
             'email' => 'ceo@example.com',
-            'role' => config('roles.admin'),
+            'role' => config('acl.roles.admin'),
             'status' => 'active',
             'position' => config('positions.ceo'),
             'department' => config('departments.management'),
@@ -118,7 +118,7 @@ class UserFactory extends Factory
             'name' =>  $name,
             'image' =>  $imageName,
             'email' => 'secretary@example.com',
-            'role' => config('roles.admin'),
+            'role' => config('acl.roles.admin'),
             'status' => 'active',
             'position' => config('positions.secretary_to_ceo'),
             'department' => config('departments.management'),
@@ -132,7 +132,7 @@ class UserFactory extends Factory
             $imageName = $this->createImage($attributes['name']);
             return [
                 'image'=>$imageName,
-                'role' => config('roles.client'),
+                'role' => config('acl.roles.client'),
                 'position' => null,
                 'department' => null,
                 'password' => Hash::make('client12345'),

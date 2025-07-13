@@ -12,15 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
+            $roles = config('acl.roles');
+            $positions = config('positions');
+            $departments = config('departments');
+
             $table->id();
-            $table->string('name')->index();//tao chi muc tang toc do truy van
+            $table->string('name')->index(); //tao chi muc tang toc do truy van
             $table->string('image')->nullable();
             $table->string('email')->unique();
-            $table->enum('position',array_values(config('positions')))->nullable();
-            $table->enum('department',array_values(config('departments')))->nullable();
+            $table->enum('position', array_values($positions))->nullable();
+            $table->enum('department', array_values($departments))->nullable();
 
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->enum('role', array_values(config('roles')))->default(config('roles.client'));
+            $table->enum('role', array_values($roles))->default($roles['client']);
 
 
             $table->timestamp('email_verified_at')->nullable();

@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
 
             ProjectUserSeeder::class,
             CommentSeeder::class,
+
+            RolePermissionSeeder::class,
         ]);
     }
 }
