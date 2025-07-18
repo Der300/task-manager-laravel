@@ -112,8 +112,8 @@ class ProjectFactory extends Factory
             'assigned_to' => empty(self::$userManagerIds) ? null : $this->faker->randomElement(self::$userManagerIds),
             'client_id' => empty(self::$clientIds) ? null : $this->faker->randomElement(self::$clientIds),
 
-            'start_date' => now()->subDays(rand(10, 100)),
-            'due_date' => now()->addDays(rand(10, 100)),
+            'start_date' => now()->subDays(rand(5, 60)),
+            'due_date' => now()->addDays(rand(5, 60)),
         ];
     }
 }

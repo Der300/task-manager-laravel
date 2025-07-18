@@ -3,8 +3,8 @@
 
 <head>
     <title>@yield('auth_title')</title>
-    <link rel="stylesheet" href="{{ asset('adminlteV3_2_0/css/adminlte.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('adminlteV3_2_0/plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
     {{-- them style cho header card, label animation cua input --}}
     <style>
         .auth-page {

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -21,21 +22,27 @@ class StatusSeeder extends Seeder
                 'code' => 'open',
                 'description' => 'The task has been created and is awaiting processing.',
                 'order' => 1,
-                'color' => '#3498db', 
+                'color' => '#006fe5',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ],
             [
                 'name' => 'In Progress',
                 'code' => 'in_progress',
                 'description' => 'The task is currently being worked on.',
                 'order' => 2,
-                'color' => '#fec007', 
+                'color' => '#fec007',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ],
             [
                 'name' => 'In Review',
                 'code' => 'in_review',
                 'description' => 'The task is being reviewed before completion.',
                 'order' => 3,
-                'color' => '#9b59b6', // purple
+                'color' => '#c13df5ff', // purple
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ],
             [
                 'name' => 'Done',
@@ -43,20 +50,26 @@ class StatusSeeder extends Seeder
                 'description' => 'The task has been completed successfully.',
                 'order' => 4,
                 'color' => '#27a844', // green
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ],
             [
                 'name' => 'Cancel',
                 'code' => 'cancel',
                 'description' => 'The task has been cancelled and will not be completed.',
                 'order' => 5,
-                'color' => '#525a45', // brown
+                'color' => '#dc3546', // red
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ],
             [
                 'name' => 'Pending',
                 'code' => 'pending',
                 'description' => 'The task has been delayed and will be completed later.',
                 'order' => 5,
-                'color' => '#525a45', // red
+                'color' => '#525a45', // brown
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ],
         ]);
     }
