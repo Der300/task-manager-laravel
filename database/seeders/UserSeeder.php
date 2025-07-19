@@ -10,22 +10,33 @@ class UserSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void {
+    public function run(): void
+    {
+        // Super Admin, CEO, Secretary
+        User::factory()->addSuperAdmin()->create();
+        User::factory()->addCEO()->create();
+
+        // Admins
+        foreach (['Admin A', 'Admin B', 'Admin C'] as $adminName) {
+            User::factory()->addAdmin($adminName)->create();
+        }
+
+        // Departments (ngoại trừ 'management' - chỉ dùng cho admin/superadmin/ceo)
+        $departments = array_values(array_diff(config('departments'), [config('departments.management')]));
+
         
-        User::factory()->addSuperAdmin()->create(); //tao super-admin
+        foreach ($departments as $department) {
+            // Managers (tong 5)
+            User::factory()->addManager($department)->create();
 
-        User::factory()->addCEO()->create();        //tao ceo
+            // Leaders: mỗi department 2 leader (tong 10)
+            User::factory()->count(2)->addLeader($department)->create();
 
-        User::factory()->addSecretaryCEO()->create();   //tao secretary
+            // member: mỗi department 10 member (tong 50)
+            User::factory()->count(10)->addMember($department)->create();
+        }
 
-        User::factory()->addAdmin('Admin A')->create();   //tao admin
-        User::factory()->addAdmin('Admin B')->create();   //tao admin
-
-        User::factory()->count(95)->addNormalUser()->create();       //tao user binh thuong
-        
-        User::factory()->count(50)->addClient()->create();       //tao client binh thuong
-
-
-
+        // Clients
+        User::factory()->count(30)->addClient()->create();
     }
 }

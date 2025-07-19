@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             StatusSeeder::class,
             IssueTypeSeeder::class,
 
+            RolePermissionSeeder::class,
+            
             UserSeeder::class,
             ProjectSeeder::class,
             TaskSeeder::class,
@@ -23,7 +25,6 @@ class DatabaseSeeder extends Seeder
             ProjectUserSeeder::class,
             CommentSeeder::class,
 
-            RolePermissionSeeder::class,
         ]);
     }
 }

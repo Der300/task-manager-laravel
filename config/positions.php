@@ -1,7 +1,6 @@
 <?php
 return [
     'ceo' => 'Chief Executive Officer',
-    'secretary_to_ceo' => 'Secretary to CEO',
     'admin' => 'Administration',
     'project_manager' => 'Project Manager',
     'leader' => 'Leader',
