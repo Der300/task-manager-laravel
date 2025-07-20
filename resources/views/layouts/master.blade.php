@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
-    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"> --}}
+    <link rel="stylesheet" href="{{ asset('vendor/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
 </head>
 
 @php
@@ -26,9 +26,12 @@
         <div class="content-wrapper" style="margin-top: 48px; padding-bottom:0">
             {{-- page name vs breadcum --}}
             @include('partials.breadcrumb')
-
-            @yield('content_wrapper')
-
+            {{-- Main content --}}
+            <section class="content">
+                <div class="container-fluid">
+                    @yield('content_wrapper')
+                </div>
+            </section>
         </div>
     </div>
 
@@ -45,6 +48,8 @@
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('vendor/adminlte/dist/js/adminlte.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/jquery.dataTables.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
     @stack('js')
 </body>
 
