@@ -59,6 +59,7 @@ return [
             'level' => 6,
             'permissions' => [
                 'dashboard' => ['view'],
+                'user'=>['edit'],
                 'project' => ['view'],
                 'task' => ['view'],
                 'comment' => ['view', 'create', 'edit'], // own edit

@@ -9,8 +9,10 @@ Route::middleware(['auth', 'verified'])
     ->controller(UserController::class)
     ->group(function () {
         Route::middleware('role:admin|super-admin|manager|leader|member')->group(function () {
-            Route::get('show/{user}', 'show')->name('show');
             Route::get('/', 'index')->name('index');
+        });
+        Route::middleware('role:admin|super-admin|manager|leader|member|client')->group(function () {
+            Route::get('show/{user}', 'show')->name('show');
 
             Route::get('edit/{user}', 'edit')->name('edit');
             Route::put('update/{user}', 'update')->name('update');
