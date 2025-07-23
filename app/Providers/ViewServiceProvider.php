@@ -38,5 +38,14 @@ class ViewServiceProvider extends ServiceProvider
                 'roleAboveMember' => $user ? $user->hasAnyRole(['admin', 'super-admin', 'manager', 'leader']) : false,
             ]);
         });
+
+        view()->composer('partials.main_navbar', function ($view) {
+            $user = Auth::user();
+            $notifications = $user ? $user->unreadNotifications : collect();
+
+            $view->with([
+                'notifications' => $notifications,
+            ]);
+        });
     }
 }

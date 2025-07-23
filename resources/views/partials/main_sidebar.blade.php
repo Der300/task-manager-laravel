@@ -141,6 +141,14 @@
                         @endif
                     </ul>
                 </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('notifications.index') }}"
+                        class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
+                        <i class="nav-icon fa fa-bell" aria-hidden="true"></i>
+                        <p>Notifications</p>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>

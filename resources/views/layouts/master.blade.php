@@ -43,7 +43,7 @@
 
     @include('partials.main_footer')
     </div><!-- ./wrapper -->
-    
+
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
         @csrf
     </form>
@@ -54,6 +54,65 @@
     <script src="{{ asset('vendor/datatables/jquery.dataTables.js') }}"></script>
     <script src="{{ asset('vendor/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
     @stack('js')
+
+    {{-- search --}}
+    <script>
+        const searchInput = document.getElementById('global-search');
+        const resultBox = document.getElementById('search-results');
+        let delayTimer;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(delayTimer);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                resultBox.style.display = 'none';
+                return;
+            }
+
+            delayTimer = setTimeout(() => {
+                fetch(`/search/json?search=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        let html = '';
+                        console.log(data);
+                        
+                        if (data.users.length) {
+                            data.users.forEach(user => {
+                                html +=
+                                    `<a href="/users/show/${user.id}" class="dropdown-item"><i class="fas fa-user mr-1"></i>${user.name}</a>`;
+                            });
+                        }
+
+                        if (data.projects.length) {
+                            data.projects.forEach(project => {
+                                html +=
+                                    `<a href="/projects/show/${project.id}" class="dropdown-item"><i class="fas fa-project-diagram mr-1"></i>${project.name}</a>`;
+                            });
+                        }
+
+                        if (data.tasks.length) {
+                            data.tasks.forEach(task => {
+                                html +=
+                                    `<a href="/tasks/show/${task.id}" class="dropdown-item"><i class="fas fa-tasks mr-1"></i>${task.name}</a>`;
+                            });
+                        }
+
+                        resultBox.innerHTML = html ||
+                            '<span class="dropdown-item text-muted">No results</span>';
+                        resultBox.style.display = 'block';
+                    });
+            }, 300); // Delay 300ms tránh spam server
+        });
+
+        // Ẩn dropdown khi click ngoài
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultBox.contains(e.target)) {
+                resultBox.style.display = 'none';
+            }
+        });
+    </script>
+
 </body>
 
 </html>
