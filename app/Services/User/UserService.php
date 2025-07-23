@@ -44,4 +44,23 @@ class UserService
     {
         return $this->getUsers($filters)->count();
     }
+
+    public function getDataUserTable(?string $currentDepartment = null, bool $statusActive = false, bool $exceptClient = false)
+    {
+        $itemsPerPage = env('ITEM_PER_PAGE', 5);
+
+        $query = User::query();
+
+        if ($currentDepartment) {
+            $query->orderByRaw("CASE WHEN department = ? THEN 0 ELSE 1 END", [$currentDepartment]);
+        }
+        if ($statusActive) {
+            $query->where('status', 'active');
+        }
+        if ($exceptClient) {
+            $query->whereNot('role', 'client');
+        }
+        return $query->orderBy('role', 'asc')
+            ->paginate($itemsPerPage);
+    }
 }

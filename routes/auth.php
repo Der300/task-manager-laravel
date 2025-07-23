@@ -35,11 +35,11 @@ Route::middleware('guest')->group(function () {
 
 //vendor\laravel\framework\src\Illuminate\Auth\Middleware\Authenticate.php
 Route::middleware('auth')->group(function () {
-    //Gửi link reset cho user khác (admin, super-admin, manager)
-    Route::middleware('role:admin|super-admin|manager')->post(
+    //Gửi link reset cho user khác (admin, super-admin, manager, leader)
+    Route::post(
         'users/{user}/send-reset-link',
         [SendResetPasswordLinkController::class, 'sendResetLink']
-    )->name('users.send-reset-link');
+    )->middleware('role:admin|super-admin|manager|leader')->name('users.send-reset-link');
 
     //Xác minh email
     Route::get('verify-email', EmailVerificationPromptController::class)->name('verification.notice');

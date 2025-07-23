@@ -6,15 +6,32 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Services\User\UserService;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    protected $userService;
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $user = Auth::user();
+        if ($user->hasAnyRole(['admin', 'super-admin'])) {
+            $data = $this->userService->getDataUserTable();
+            return view('users.index', ['data' => $data]);
+        }
+        if ($user->hasRole('manager')) {
+            $data = $this->userService->getDataUserTable($user->department, statusActive: true, exceptClient: false);
+            return view('users.index', ['data' => $data]);
+        }
+        $data = $this->userService->getDataUserTable($user->department, true, true);
+        return view('users.index', ['data' => $data]);
     }
 
     /**
