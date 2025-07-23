@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 
 @php
@@ -53,8 +54,10 @@
     <script src="{{ asset('vendor/adminlte/dist/js/adminlte.min.js') }}"></script>
     <script src="{{ asset('vendor/datatables/jquery.dataTables.js') }}"></script>
     <script src="{{ asset('vendor/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('js')
-
+    @include('components.sweet-alert')
+    {{-- @yield('script-confirm') --}}
     {{-- search --}}
     <script>
         const searchInput = document.getElementById('global-search');
@@ -64,7 +67,7 @@
         searchInput.addEventListener('input', function() {
             clearTimeout(delayTimer);
             const query = this.value.trim();
-            
+
             if (query.length < 2) {
                 resultBox.style.display = 'none';
                 return;
@@ -76,7 +79,7 @@
                     .then(data => {
                         let html = '';
                         console.log(data);
-                        
+
                         if (data.users.length) {
                             data.users.forEach(user => {
                                 html +=

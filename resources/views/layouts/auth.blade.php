@@ -5,6 +5,7 @@
     <title>@yield('auth_title')</title>
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     {{-- them style cho header card, label animation cua input --}}
     <style>
         .auth-page {
@@ -99,6 +100,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{-- chuyen doi giua type password va text de xem --}}
     <script type="text/javascript">
         function togglePassword(inputId = 'password') {
