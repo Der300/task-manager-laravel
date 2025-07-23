@@ -10,9 +10,7 @@ Route::middleware(['auth', 'verified'])
     ->group(function () {
         Route::get('show/{project}', 'show')->name('show');
 
-        Route::get('/', 'index')
-            ->middleware('role:admin|super-admin|manager|leader|member')
-            ->name('index');
+        Route::get('/', 'index')->name('index');
 
         Route::middleware('role:admin|super-admin|manager')->group(function () {
             Route::get('create', 'create')->name('create');

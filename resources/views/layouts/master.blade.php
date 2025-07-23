@@ -43,7 +43,10 @@
 
     @include('partials.main_footer')
     </div><!-- ./wrapper -->
-
+    
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+        @csrf
+    </form>
     {{-- JS --}}
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>

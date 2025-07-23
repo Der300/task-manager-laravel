@@ -8,7 +8,7 @@
         {{-- email --}}
         <div class="form-group auth-wrapper">
             <input type="text" name="email" id="email" class="form-control input" autocomplete="TRUE" placeholder=""
-                autofocus required>
+                autofocus required onchange="this.value = this.value.trim()">
             <label for="email" class="label">Email</label>
         </div>
 

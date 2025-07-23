@@ -6,7 +6,7 @@
     </a>
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" style="transition: width 0.3s ease, margin 0.3s ease;">
         {{-- user panel --}}
         <div class="border-top border-bottom my-2">
             {{-- user info --}}
@@ -26,18 +26,19 @@
             </div>
 
             {{-- Dropdown menu of  User Panel: Profile, Logout --}}
-            <div id="sidebar-user-dropdown" class="collapse px-3 py-2">
-                <a class="dropdown-item" href="">
+            <div id="sidebar-user-dropdown" class="collapse px-3 py-2"
+                style="transition: height 0.4s ease, opacity 0.3s ease;">
+                <a class="dropdown-item" href="{{ route('users.show', ['user' => auth()->user()->id]) }}">
                     <i class="fas fa-user mr-2"></i> Profile
                 </a>
                 <div class="dropdown-divider"></div>
-                <form action="{{ route('logout') }}" method="POST">
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                     @csrf
-                    <a class="dropdown-item text-danger" href="{{ route('logout') }}"
-                        onclick="event.preventDefault();this.closest('form').submit();">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                    </a>
                 </form>
+                <a class="dropdown-item text-danger" href="#"
+                    onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </a>
             </div>
         </div>
 
@@ -54,39 +55,91 @@
                     </a>
                 </li>
                 {{-- Manage user --}}
-                <li class="nav-item {{ request()->routeIs('users.*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                        <i class="nav-icon fa fa-user" aria-hidden="true"></i>
-                        <!-- Add icons to the links using the .nav-icon class with font-awesome or any other icon font library -->
+                @if ($roleNotClient)
+                    <li class="nav-item {{ request()->routeIs('users.*') ? 'menu-open' : '' }}">
+                        <div class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                            <i class="nav-icon fa fa-user" aria-hidden="true"></i>
+                            <!-- Add icons to the links using the .nav-icon class with font-awesome or any other icon font library -->
+                            <p>
+                                Manage users
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </div>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('users.index') }}"
+                                    class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}">
+                                    <i class="fa fa-list nav-icon ml-3" aria-hidden="true"></i>
+                                    <p>User List</p>
+                                </a>
+                            </li>
+                            @if ($roleAdminOrSuper)
+                                <li class="nav-item">
+                                    <a href="{{ route('users.create') }}"
+                                        class="nav-link {{ request()->routeIs('users.create') ? 'active' : '' }}">
+                                        <i class="fa fa-user-plus nav-icon ml-3" aria-hidden="true"></i>
+                                        <p>New User</p>
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </li>
+                @endif
+
+                {{-- Manage project --}}
+                <li class="nav-item {{ request()->routeIs('projects.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('projects.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-project-diagram"></i>
                         <p>
-                            Manage user
+                            Manage projects
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="" class="nav-link">
-                                <i class="fa fa-user-plus nav-icon ml-3" aria-hidden="true"></i>
-                                <p>New User</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('users.index') }}"
-                                class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}">
+                            <a href="{{ route('projects.index') }}"
+                                class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}">
                                 <i class="fa fa-list nav-icon ml-3" aria-hidden="true"></i>
-                                <p>User List</p>
+                                <p>Project List</p>
                             </a>
                         </li>
+                        @if ($roleAboveLeader)
+                            <li class="nav-item">
+                                <a href="{{ route('projects.create') }}" class="nav-link">
+                                    <i class="fa fa-plus nav-icon ml-3"></i>
+                                    <p>New Project</p>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a href="pages/widgets.html" class="nav-link">
-                        <i class="nav-icon fas fa-th"></i>
+
+                {{-- Manage task --}}
+                <li class="nav-item {{ request()->routeIs('tasks.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}">
+                        <i class="fas fa-tasks nav-icon"></i>
                         <p>
-                            Widgets
-                            <span class="right badge badge-danger">New</span>
+                            Manage tasks
+                            <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('tasks.index') }}"
+                                class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}">
+                                <i class="fa fa-list nav-icon ml-3" aria-hidden="true"></i>
+                                <p>Task List</p>
+                            </a>
+                        </li>
+                        @if ($roleAboveMember)
+                            <li class="nav-item">
+                                <a href="{{ route('tasks.create') }}" class="nav-link">
+                                    <i class="fa fa-plus nav-icon ml-3"></i>
+                                    <p>New Task</p>
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
                 </li>
             </ul>
         </nav>

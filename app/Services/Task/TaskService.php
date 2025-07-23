@@ -83,7 +83,7 @@ class TaskService
         return Task::with([
             'status:id,name,color',
             'assignedUser:id,name',
-            'project:id,name'
+            'project'
         ])
             ->whereHas('status', fn($s) => $s->whereNotIn('code', ['done', 'cancel']));
     }
@@ -106,6 +106,51 @@ class TaskService
     }
 
     /**
+     * Lấy tasks co trang thai thai doi trong tuan đang active(status khác done, cancel) trong projects
+     *
+     * @return \Illuminate\Support\Collection của các stdClass object
+     */
+    public function getActiveTasksStatusChangedThisWeekInProjects(Collection $projectIds): Collection
+    {
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+
+        return $this->baseActiveTaskQuery()
+            ->whereHas('project', function ($query) use ($projectIds) {
+                $query->whereIn('id', $projectIds);
+            })
+            ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
+            ->orderBy('updated_at', 'desc')
+            ->limit(50)
+            ->get();
+    }
+
+    /**
+     * Lấy tasks đang active(status khác done, cancel) co project id
+     *
+     * @return \Illuminate\Support\Collection tasks
+     */
+    public function getActiveTasksWithProjectId(string $projectId): Collection
+    {
+        return $this->baseActiveTaskQuery()
+            ->where('project_id', $projectId)
+            ->limit(50)
+            ->get();
+    }
+
+    /**
+     * Lấy tasks đang active(status khác done, cancel) co project id []
+     *
+     * @return \Illuminate\Support\Collection tasks
+     */
+    public function getActiveTaskIdsWithArrayProjectId(Collection $projectIds): Collection
+    {
+        return $this->baseActiveTaskQuery()
+            ->whereIn('project_id', $projectIds)
+            ->pluck('id');
+    }
+
+    /**
      * Lấy tasks overdue đang active(status khác done, cancel)
      *
      * @return \Illuminate\Support\Collection tasks
@@ -115,6 +160,26 @@ class TaskService
         $now = Carbon::now();
 
         return $this->baseActiveTaskQuery()
+            ->whereNotNull('due_date')
+            ->where('due_date', '<=', $now)
+            ->orderBy('due_date', 'asc')
+            ->limit(50)
+            ->get();
+    }
+
+    /**
+     * Lấy tasks overdue đang active(status khác done, cancel) trong projects
+     *
+     * @return \Illuminate\Support\Collection tasks
+     */
+    public function getActiveTasksOverdueInProjects(Collection $projectIds): Collection
+    {
+        $now = Carbon::now();
+
+        return $this->baseActiveTaskQuery()
+            ->whereHas('project', function ($query) use ($projectIds) {
+                $query->whereIn('id', $projectIds);
+            })
             ->whereNotNull('due_date')
             ->where('due_date', '<=', $now)
             ->orderBy('due_date', 'asc')

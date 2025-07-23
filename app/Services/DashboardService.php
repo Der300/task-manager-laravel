@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Services\Comment\CommentService;
 use App\Services\Project\ProjectService;
 use App\Services\Status\StatusService;
@@ -10,8 +11,6 @@ use App\Services\User\UserService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-
-
 class DashboardService
 {
     protected $projectService;
@@ -47,10 +46,10 @@ class DashboardService
     public function getDataOverviewBoxes(): array
     {
         return [
-            $this->buildBox('Total Projects', 'fas fa-project-diagram', 'info', $this->projectService->countProjects(), 'project'),
-            $this->buildBox('Total Tasks', 'fas fa-tasks', 'success', $this->taskService->countTasks(), 'task'),
-            $this->buildBox('Member', 'fas fa-users', 'warning', $this->userService->countUsers(['not_in' => ['role' => ['client']]]), 'user'),
-            $this->buildBox('Customer', 'fas fa-users', 'primary', $this->userService->countUsers(['role' => 'client']), 'user')
+            $this->buildBox('Total Projects', 'fas fa-project-diagram', 'info', $this->projectService->countProjects(), 'projects'),
+            $this->buildBox('Total Tasks', 'fas fa-tasks', 'success', $this->taskService->countTasks(), 'tasks'),
+            $this->buildBox('Member', 'fas fa-users', 'warning', $this->userService->countUsers(['not_in' => ['role' => ['client']]]), 'users'),
+            $this->buildBox('Customer', 'fas fa-users', 'primary', $this->userService->countUsers(['role' => 'client']), 'users')
         ];
     }
 
@@ -69,9 +68,16 @@ class DashboardService
     // {{-- hien thi tien do project co chua cho tasks, tre dealine, ca tuan khong comment --}}
     public function getDataProjectNeedingAttention(): array
     {
-
         $result = [];
-        $projects = $this->projectService->getActiveProjects();
+        $currentUser = Auth::user();
+
+        if ($currentUser->hasRole('manager') || $currentUser->hasRole('leader')) {
+            $projectIds = $currentUser->projects->pluck('id')->unique();
+            $projects = $this->projectService->getActiveProjectsByIds($projectIds);
+        } else {
+            $projects = $this->projectService->getActiveProjects();
+        }
+
         $projectHasTasks = $this->taskService->getAllProjectIdsWithTasks();
         $sevenDaysAgo = $this->now->copy()->subDays(7);
 
@@ -100,10 +106,10 @@ class DashboardService
             }
 
             if (!empty($issues)) {
-                $manager = $this->userService->getUsers(['id' => $project->assigned_to])->first()->name;
                 $result[] = [
+                    'id' => $project->id,
                     'project_name' => $project->name,
-                    'manager' => $manager,
+                    'manager' => $project->assignedUser?->name,
                     'due_date' => $project->due_date,
                     'issues' => $issues,
                 ];
@@ -165,12 +171,26 @@ class DashboardService
     // {{-- Thong ke so luong task cua moi nhan vien --}}
     public function getDataTaskWorkLoad(): array
     {
-        $users = $this->userService->getUsers([
-            'status' => 'active',
-            'not_in' => ['department' => [config('departments.management'), config('departments.project_mamagement')]]
-        ]);
+
+        $currentUser = Auth::user();
+        if ($currentUser->hasRole('manager') || $currentUser->hasRole('leader')) {
+            $users = $this->userService->getUsers([
+                'status' => 'active',
+                'not_in' => ['department' => [config('departments.management')]],
+                'department' => $currentUser->department,
+            ]);
+        } else {
+            $users = $this->userService->getUsers([
+                'status' => 'active',
+                'not_in' => ['department' => [config('departments.management')]]
+            ]);
+        }
 
         $labels = $users->pluck('name')->toArray();
+        $labelInfo = [];
+        foreach ($users as $user) {
+            $labelInfo[] = "$user->name - $user->department - $user->position";
+        }
         $data = $users->map(fn($u) => $this->taskService->countTasks(['assigned_to' => $u->id]) ?? 0)->toArray();
         $heightCanvas = count($labels) * 30 ?? 300;
 
@@ -178,13 +198,21 @@ class DashboardService
             'heightCanvas' => $heightCanvas,
             'data' => $data,
             'labels' => $labels,
+            'labelInfo' => $labelInfo,
         ];
     }
 
     // {{-- Thong ke tasks co thay doi trang thai trong tuan --}}
     public function getDataTaskStatusChange(): array
     {
-        $tasks = $this->taskService->getActiveTasksStatusChangedThisWeek();
+        $currentUser = Auth::user();
+        if ($currentUser->hasRole('manager') || $currentUser->hasRole('leader')) {
+            $projectIds = $currentUser->projects->pluck('id')->unique();
+            $tasks = $this->taskService->getActiveTasksStatusChangedThisWeekInProjects($projectIds);
+        } else {
+            $tasks = $this->taskService->getActiveTasksStatusChangedThisWeek();
+        }
+
         return $tasks->map(function ($task) {
             return [
                 'task_name' => $task->name,
@@ -199,9 +227,17 @@ class DashboardService
     // {{-- Hien thi task qua han --}}
     public function getDataTaskOverdue(): array
     {
-        $tasks = $this->taskService->getActiveTasksOverdue();
+        $currentUser = Auth::user();
+        if ($currentUser->hasRole('manager') || $currentUser->hasRole('leader')) {
+            $projectIds = $currentUser->projects->pluck('id')->unique();
+            $tasks = $this->taskService->getActiveTasksOverdueInProjects($projectIds);
+        } else {
+            $tasks = $this->taskService->getActiveTasksOverdue();
+        }
+
         return $tasks->map(function ($task) {
             return [
+                'id' => $task->id,
                 'name' => $task->name,
                 'due_date' => $task->due_date,
                 'amount_day' => ceil(Carbon::parse($task->due_date)->diffInDays($this->now)),
@@ -210,10 +246,51 @@ class DashboardService
         })->toArray();
     }
 
-    // {{-- Hien thi comments gan nhat --}}
-    public function getDataComment(): array
+    // {{-- Hien thi my tasks  --}}
+    public function getDataMyTask(User $currentUser, array $clientProjects = []): array
     {
-        $comments = $this->commentService->getComments();
+        $isClient = $currentUser->hasRole('client');
+        $result = [];
+
+        if ($isClient) {
+            foreach ($clientProjects as $project) {
+                $tasks = $this->taskService->getActiveTasksWithProjectId($project['id']);
+
+                foreach ($tasks as $task) {
+                    $result[] = [
+                        'id' => $task->id,
+                        'project_name' => $task->project?->name,
+                        'name' => $task->name,
+                        'status_name' => $task->status?->name,
+                        'status_color' => $task->status?->color,
+                        'assignee' => $task->assignedUser?->name,
+                        'due_date' => $task->due_date,
+                    ];
+                }
+            }
+        } else {
+            $tasks = $this->taskService->getTaskWithUserId($currentUser->id);
+
+            foreach ($tasks as $task) {
+                $result[] = [
+                    'id' => $task->id,
+                    'project_name' => $task->project?->name,
+                    'name' => $task->name,
+                    'status_name' => $task->status?->name,
+                    'status_color' => $task->status?->color,
+                    'assignee' => $task->assignedUser?->name,
+                    'due_date' => $task->due_date,
+                    'updated_at' => $task->updated_at,
+                ];
+            }
+        }
+        return $result;
+    }
+
+    // {{-- Hien thi comments gan nhat --}}
+    public function getDataComment(User $currentUser): array
+    {
+        $comments = $this->commentService->getRecentComments($currentUser);
 
         return $comments->map(function ($comment) {
             return [
@@ -226,24 +303,68 @@ class DashboardService
                 'user_position' => $comment->user->position ?? null,
                 'user_department' => $comment->user->department ?? null,
 
+                'task_id' => $comment->task->id,
                 'task_name' => $comment->task->name,
+                'project_id' => $comment->task->project->id,
+                'project_name' => $comment->task->project->name,
             ];
         })->toArray();
     }
 
-    // {{-- Hien thi my tasks  --}}
-    public function getDataMyTask(): array
+    //-------------------------------------------client function 
+    // {{-- Hien thi project cua client  --}}
+    public function getDataClientProject(string $clientId): array
     {
-        $user_id = Auth::user()->id;
-        $tasks = $this->taskService->getTaskWithUserId($user_id);
-
-        return $tasks->map(function ($task) {
+        $projects = $this->projectService->getProjects(['client_id' => $clientId]);
+        $result = $projects->map(function ($project) {
             return [
-                'name' => $task->name,
-                'status_name' => $task->status?->name,
-                'status_color' =>  $task->status?->color,
-                'updated_at' => $task->updated_at,
+                'id' => $project->id,
+                'name' => $project->name,
+                'status_name' => $project->status?->name,
+                'status_color' => $project->status?->color,
+                'status_code' => $project->status?->code,
+                'manager' => $project->assignedUser?->name,
+                'due_date' => $project->due_date,
             ];
         })->toArray();
+
+        return collect($result)->sortByDesc('status_code')->values()->toArray();
+    }
+
+    // {{-- Hien thi progress client tasks  --}}
+    public function getDataClientProjectProgress(array $clientProjects): array
+    {
+        $result = [];
+        $theme = [
+            'open' => 'info',
+            'in_progress' => 'warning',
+            'in_review' => 'primary',
+            'done' => 'success',
+            'cancel' => 'danger',
+            'pending' => 'secondary',
+        ];
+
+        foreach ($clientProjects as $project) {
+            $tatusIdDone = $this->statusService->getIdByCode('done');
+            $tatusIdCancel = $this->statusService->getIdByCode('cancel');
+            $totalTask = $this->taskService->countTasks(['not_in' => ['status_id' => [$tatusIdCancel]], 'project_id' => $project['id']]);
+
+            $taskDone = $this->taskService->countTasks(['status_id' => $tatusIdDone, 'project_id' => $project['id']]);
+            $valuePercent = $totalTask > 0
+                ? ceil((($taskDone) / $totalTask) * 100)
+                : 0;
+            $result[] = [
+                'totalTask' => $totalTask,
+                'taskActive' => $taskDone,
+                'project_name' => $project['name'],
+                'valuePercent' => $valuePercent,
+                'theme' => $theme[$project['status_code']],
+                'status_color' => $project['status_color'],
+                'status_name' => $project['status_name'],
+                'manager' => $project['manager'],
+                'due_date' => $project['due_date'],
+            ];
+        }
+        return $result;
     }
 }

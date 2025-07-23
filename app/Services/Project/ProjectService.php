@@ -53,7 +53,7 @@ class ProjectService
     private function baseActiveProjectQuery(): Builder
     {
         return Project::with([
-            'status:id,name,color',
+            'status:id,name,color,code',
             'assignedUser:id,name',
         ])
             ->whereHas(
@@ -73,6 +73,30 @@ class ProjectService
     }
 
     /**
+     * Lấy projects của 1 client trong hệ thống đang active(status khác done, cancel)
+     *
+     * @return \Illuminate\Support\Collection của các stdClass object
+     */
+    public function getActiveProjectsWithClientId(string $clientId): Collection
+    {
+        return $this->baseActiveProjectQuery()
+            ->where('client_id', $clientId)
+            ->get();
+    }
+
+    /**
+     * Lấy projects của 1 manager trong hệ thống đang active(status khác done, cancel)
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getActiveProjectsWithManagerId(string $clientId): Collection
+    {
+        return $this->baseActiveProjectQuery()
+            ->where('assigned_to', $clientId)
+            ->get();
+    }
+
+    /**
      * Lấy projects trong hệ thống đang active(status khác done, cancel) theo tháng hiện tại
      *
      * @return \Illuminate\Support\Collection của các stdClass object
@@ -87,4 +111,24 @@ class ProjectService
             ->whereDate('due_date', '>=', $endOfMonth)
             ->get();
     }
+
+    /**
+     * Lấy id projects theo assigned_to trong hệ thống
+     *
+     * @return \Illuminate\Support\Collection của các stdClass object
+     */
+    public function getProjectAssignedIdsWithUser(string $userId): Collection
+    {
+        return Project::where('assigned_to', $userId)->pluck('id');
+    }
+
+    /**
+     * Lấy projects theo id trong hệ thống
+     *
+     * @return \Illuminate\Support\Collection của các stdClass object
+     */
+    public function getActiveProjectsByIds(Collection $ids): Collection
+{
+    return Project::whereIn('id', $ids)->get();
+}
 }
