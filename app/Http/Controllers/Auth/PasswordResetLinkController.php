@@ -29,16 +29,21 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $start = microtime(true);
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        $status = Password::sendResetLink($request->only('email'));
+
+        // Thời gian xử lý tối thiểu (ví dụ 2 giây)
+        $minResponseTime = 2.0; // seconds
+
+        $duration = microtime(true) - $start;
+
+        // Nếu thời gian xử lý thực tế nhỏ hơn minResponseTime thì delay thêm
+        if ($duration < $minResponseTime) {
+            usleep(($minResponseTime - $duration) * 1e6); // usleep tính bằng micro giây
+        }
+
+        // Luôn trả về thông báo success chung chung, ko tiết lộ email tồn tại hay không
+        return redirect('login')->with('success', 'If your email address exists in our system, you will receive a password reset link shortly.');
     }
 }

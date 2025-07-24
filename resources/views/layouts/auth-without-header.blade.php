@@ -69,23 +69,6 @@
 </head>
 
 <body>
-    {{-- header --}}
-    <div class="w-100 position-fixed bg-white text-center top-0 start-0 d-flex align-items-center justify-content-between"
-        style="height: 48px">
-        {{-- brand logo, message --}}
-        <div class="text-@yield('auth_color') h-100">
-            <a href={{ route('login') }}>
-                <img src="{{ asset('images/brand_without_bg.png') }}" alt="brand logo"
-                    style="height:100%; object-fit:cover; border-right: solid 1px rgb(221, 221, 221); margin-right:4px">
-            </a>
-            @yield('auth_header_message')
-        </div>
-        {{-- login button --}}
-        <div class="mr-3">
-            <a class="btn btn-outline-secondary" href="{{ route('login') }}">Login</a>
-        </div>
-    </div>
-
     {{-- body --}}
     <div class="auth-page">
         <div class="card card-@yield('auth_color') card-outline w-25 card-custom">

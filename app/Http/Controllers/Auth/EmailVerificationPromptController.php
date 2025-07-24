@@ -14,8 +14,21 @@ class EmailVerificationPromptController extends Controller
      */
     public function __invoke(Request $request): RedirectResponse|View
     {
-        return $request->user()->hasVerifiedEmail()
-                    ? redirect()->intended(route('dashboard', absolute: false))
-                    : view('auth.verify-email');
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
+        //Gửi tự động 1 lần khi truy cập trong 1 session
+        if (!session()->has('verification_mail_sent')) {
+            $request->user()->sendEmailVerificationNotification();
+            session()->put('verification_mail_sent', true);
+        }
+
+        return view('auth.verify-email');
+    }
+
+    public function statusView()
+    {
+        return view('auth.verify-email-status');
     }
 }

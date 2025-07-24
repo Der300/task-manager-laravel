@@ -15,13 +15,22 @@ class SendResetPasswordLinkController extends Controller
     {
         $currentUser = Auth::user();
 
-        if ($currentUser->hasRole('manager') && $currentUser->department !== $user->department) {
+        if ($currentUser->id === $user->id) {
+            return back()->with('error', 'You cannot send a reset link to yourself.');
+        }
+
+        if ($currentUser->hasAnyRole(['manager', 'leader']) && $currentUser->department !== $user->department) {
             abort(403, 'You do not have permission to send a reset link to this user.');
         }
+
         $status = Password::sendResetLink([
             'email' => $user->email,
         ]);
 
-        return back()->with('status', __($status));
+        if ($status === Password::RESET_LINK_SENT) {
+            return back()->with('success', __($status));
+        }
+
+        return back()->with(['error', __($status)]);
     }
 }

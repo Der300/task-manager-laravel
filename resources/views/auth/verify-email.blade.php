@@ -34,7 +34,8 @@
 
 @section('auth_title', 'Verification Email')
 @section('auth_color', 'info')
-@section('auth_header_message','A new verification link has been sent to the email address you provided during registration.')
+@section('auth_header_message','A new verification link has been sent to the email address you provided during
+    registration.')
 
 @section('auth_content')
     <form action="{{ route('verification.send') }}" method="POST">
@@ -46,12 +47,42 @@
     </form>
     <form action="{{ route('logout') }}" method="POST">
         @csrf
-        {{-- action resend email --}}
+        {{-- action logout --}}
         <div class="w-100 d-flex mb-3 justify-content-center">
             <button type="submit" class="btn btn-outline-info w-50">Log Out</button>
         </div>
     </form>
 @endsection
 
+@section('auth-script')
+    <script>
+        async function checkEmailVerified() {
+            try {
+                const response = await fetch('/verify-email-status', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    }
+                });
+                const data = await response.json();
+                if (data.verified) {
+                    location.reload(); //reload
+                }
+            } catch (error) {
+                console.error('Lỗi kiểm tra xác minh email:', error);
+            }
+        }
 
+        // Polling định kỳ mỗi 30 giây
+        setInterval(checkEmailVerified, 30000);
 
+        // Polling khi tab được focus lại
+        window.addEventListener('focus', () => {
+            checkEmailVerified();
+        });
+
+        // Kiểm tra ngay khi load trang
+        checkEmailVerified();
+    </script>
+
+@endsection

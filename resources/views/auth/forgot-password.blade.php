@@ -9,7 +9,7 @@
         @csrf
         {{-- email --}}
         <div class="form-group auth-wrapper">
-            <input type="text" name="email" id="email" value="{{old('email')}}" class="form-control input" autocomplete="TRUE" placeholder=""
+            <input type="text" name="email" id="email" value="{{old('email')}}" class="form-control input" autocomplete="off" placeholder=""
                 required autofocus>
             <label for="email" class="label">Email for reset password</label>
         </div>
@@ -19,12 +19,7 @@
             <button type="submit" class="btn btn-warning w-50">Send Reset Link</button>
         </div>
 
-        {{-- hien thi status/error --}}
-        @if (session('status'))
-            <div class="alert alert-success">
-                {{ session('status') }}
-            </div>
-        @endif
+        {{-- hien thi error --}}
         @error('email')
             <div class="alert alert-danger">
                 {{ $message }}

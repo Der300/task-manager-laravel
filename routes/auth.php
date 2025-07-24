@@ -42,7 +42,11 @@ Route::middleware('auth')->group(function () {
     )->middleware('role:admin|super-admin|manager|leader')->name('users.send-reset-link');
 
     //Xác minh email
-    Route::get('verify-email', EmailVerificationPromptController::class)->name('verification.notice');
+    Route::get('verify-email', EmailVerificationPromptController::class)->middleware('throttle:6,1')->name('verification.notice');
+    
+    Route::get('/verify-email-status', function () {
+        return ['verified' => Auth::user()->hasVerifiedEmail()];
+    })->middleware('auth'); //goi trong JS polling khi xác minh email
 
     Route::controller(VerifyEmailController::class)->middleware(['signed', 'throttle:6,1'])->group(function () {
         Route::get('verify-email/{id}/{hash}', '__invoke')->name('verification.verify');
