@@ -30,9 +30,9 @@ return [
             'permissions' => [
                 'dashboard' => ['view'],
                 'user' => ['view', 'edit'], //own edit 
-                'project' => ['view', 'create', 'edit', 'assign'],
-                'task' => ['view', 'create', 'edit', 'soft-delete', 'force-delete', 'restore', 'assign'],
-                'comment' => ['view', 'create', 'edit']
+                'project' => ['view', 'create', 'edit', 'assign', 'soft-delete', 'restore'], //'soft-delete', 'restore' own
+                'task' => ['view', 'create', 'edit', 'soft-delete', 'restore', 'assign'],//'soft-delete', 'restore' team
+                'comment' => ['view', 'create', 'edit', 'soft-delete', 'restore']//'soft-delete', 'restore' team
             ],
         ],
         'leader' => [
@@ -41,8 +41,8 @@ return [
                 'dashboard' => ['view'],
                 'user' => ['view', 'edit'], // own edit
                 'project' => ['view'],
-                'task' => ['view', 'create', 'edit', 'assign'],
-                'comment' => ['view', 'create', 'edit'], // own edit
+                'task' => ['view', 'create', 'edit', 'assign', 'soft-delete', 'restore'],//'soft-delete', 'restore' team
+                'comment' => ['view', 'create', 'edit', 'soft-delete', 'restore'], // own edit //'soft-delete', 'restore' team
             ],
         ],
         'member' => [
@@ -52,17 +52,17 @@ return [
                 'user' => ['view', 'edit'], // own edit 
                 'project' => ['view'],
                 'task' => ['view', 'edit'], // own edit
-                'comment' => ['view', 'create', 'edit'], // own edit
+                'comment' => ['view', 'create', 'edit', 'soft-delete', 'restore'], // own edit //'soft-delete', 'restore' own], // own edit
             ],
         ],
         'client' => [
             'level' => 6,
             'permissions' => [
                 'dashboard' => ['view'],
-                'user'=>['edit'],
+                'user' => ['edit'],
                 'project' => ['view'],
                 'task' => ['view'],
-                'comment' => ['view', 'create', 'edit'], // own edit
+                'comment' => ['view', 'create', 'edit', 'soft-delete', 'restore'], // own edit //'soft-delete', 'restore' own
             ],
         ],
     ],
