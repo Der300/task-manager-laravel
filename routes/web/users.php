@@ -11,21 +11,21 @@ Route::middleware(['auth', 'verified'])
         Route::middleware('role:admin|super-admin|manager|leader|member')->group(function () {
             Route::get('/', 'index')->name('index');
         });
-        Route::middleware('role:admin|super-admin|manager|leader|member|client')->group(function () {
-            Route::get('show/{user}', 'show')->name('show');
-
-            Route::get('edit/{user}', 'edit')->name('edit');
-            Route::put('update/{user}', 'update')->name('update');
-        });
 
         Route::middleware('role:admin|super-admin')->group(function () {
             Route::get('create', 'create')->name('create');
-            Route::post('store', 'store')->name('store');
+            Route::post('/', 'store')->name('store');
 
-            Route::post('assign/{user}', 'assign')->name('assign');
+            Route::middleware('password.confirm')->group(function () {
+                Route::get('recycle', 'recycle')->name('recycle');
 
-            Route::delete('soft-delete/{user}', 'softDelete')->name('soft-delete');
-            Route::post('restore/{user}', 'restore')->name('restore');
-            Route::delete('force-delete/{user}', 'forceDelete')->name('force-delete');
+                Route::delete('{user}', 'softDelete')->name('soft-delete');
+                Route::post('{user}/restore', 'restore')->withTrashed()->name('restore');
+                Route::delete('{user}/force-delete', 'forceDelete')->withTrashed()->name('force-delete');
+            });
         });
+
+        Route::put('{user}', 'update')->name('update');
+        Route::get('{user}', 'show')->name('show');
+        Route::get('{user}/edit', 'edit')->name('edit');
     });

@@ -7,23 +7,23 @@ Route::middleware(['auth', 'verified'])
     ->name('tasks.')
     ->controller(TaskController::class)
     ->group(function () {
-        Route::get('show/{task}', 'show')->name('show');
         Route::get('/', 'index')->name('index');
-
-        Route::middleware('role:admin|super-admin|manager|leader|member')->group(function () {
-            Route::get('edit/{task}', 'edit')->name('edit');
-            Route::put('update/{task}', 'update')->name('update');
-        });
+        Route::get('{task}', 'show')->name('show');
 
         Route::middleware('role:admin|super-admin|manager|leader')->group(function () {
             Route::get('create', 'create')->name('create');
-            Route::post('store', 'store')->name('store');
-            Route::post('assign/{task}', 'assign')->name('assign');
+            Route::post('/', 'store')->name('store');
 
             Route::middleware('role:admin|super-admin|manager')->group(function () {
-                Route::delete('soft-delete/{task}', 'softDelete')->name('soft-delete');
-                Route::post('restore/{task}', 'restore')->name('restore');
-                Route::delete('force-delete/{task}', 'forceDelete')->name('force-delete');
+                Route::get('recycle', 'recycle')->name('recycle');
+                Route::delete('{task}', 'softDelete')->name('soft-delete');
+                Route::post('{task}/restore', 'restore')->name('restore');
+                Route::delete('{task}/force-delete', 'forceDelete')->name('force-delete');
             });
+        });
+
+        Route::middleware('role:admin|super-admin|manager|leader|member')->group(function () {
+            Route::get('{task}/edit', 'edit')->name('edit');
+            Route::put('{task}', 'update')->name('update');
         });
     });

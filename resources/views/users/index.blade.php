@@ -59,24 +59,27 @@
                                         <div class="d-flex align-items-center justify-content-center">
                                             @if ($roleAboveManager)
                                                 <form action="{{ route('users.soft-delete', ['user' => $item->id]) }}"
-                                                    method="POST" class="mx-1">
-                                                    <span data-toggle="tooltip" data-placement="top" title="Delete">
-                                                        <button class="btn btn-danger btn-sm px-2 py-1"
-                                                            onclick="return confirm('Are you sure?')">
-                                                            <i class="fa fa-trash" aria-hidden="true"></i>
+                                                    method="POST" class="mx-1"
+                                                    onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?'})">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <span data-toggle="tooltip" data-placement="top"
+                                                        title="Move to Recycle">
+                                                        <button class="btn btn-danger btn-sm px-2 py-1">
+                                                            <i class="fa fa-recycle" aria-hidden="true"></i>
                                                         </button>
                                                     </span>
                                                 </form>
-                                                <form action="{{ route('users.show', ['user' => $item->id]) }}" method="GET" class="mx-1">
-                                                    <span data-toggle="tooltip" data-placement="top" title="Detail">
-                                                        <button class="btn btn-warning btn-sm px-2 py-1">
-                                                            <i class="fa fa-eye" aria-hidden="true"></i>
-                                                        </button>
-                                                    </span>
-                                                </form>
+                                                <a href="{{ route('users.show', ['user' => $item->id]) }}"
+                                                    class="btn btn-warning btn-sm px-2 py-1 mx-1" data-toggle="tooltip"
+                                                    data-placement="top" title="Detail">
+                                                    <i class="fa fa-eye" aria-hidden="true"></i>
+                                                </a>
                                             @endif
                                             @if ($canResetPassword($item))
-                                                <form action="{{route('users.send-reset-link',['user'=>$item->id])}}" method="GET" class="mx-1">
+                                                <form action="{{ route('users.send-reset-link', ['user' => $item->id]) }}"
+                                                    method="POST" class="mx-1">
+                                                    @csrf
                                                     <span data-toggle="tooltip" data-placement="top" title="Reset Password">
                                                         <button class="btn btn-info btn-sm px-2 py-1">
                                                             <i class="fa fa-key" aria-hidden="true"></i>
@@ -92,13 +95,12 @@
                     @endforeach
                 </tbody>
             </table>
+
         </div>
         <!-- /.card-body -->
         <div class="card-footer clearfix">
             {{ $data->links() }}
         </div>
     </div>
-    <!-- /.card -->
-
 
 @endsection

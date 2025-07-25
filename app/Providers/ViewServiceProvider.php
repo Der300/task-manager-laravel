@@ -25,6 +25,7 @@ class ViewServiceProvider extends ServiceProvider
             $view->with([
                 'roleNotClient' => $user ? !$user->hasRole('client') : false,
                 'roleAdminOrSuper'  => $user ? $user->hasAnyRole(['admin', 'super-admin']) : false,
+                'roleAboveManager' => $user ? $user->hasAnyRole(['admin', 'super-admin']) : false,
                 'roleAboveLeader' => $user ? $user->hasAnyRole(['admin', 'super-admin', 'manager']) : false,
                 'roleAboveMember' => $user ? $user->hasAnyRole(['admin', 'super-admin', 'manager', 'leader']) : false,
             ]);
@@ -58,11 +59,10 @@ class ViewServiceProvider extends ServiceProvider
 
             $canManageUser = function ($item) use ($user) {
                 if (!$user || !$item) return false;
-
                 if ($user->hasRole('super-admin') && $item->role !== 'super-admin') {
                     return true;
                 }
-                
+
                 if ($user->hasRole('admin') && !in_array($item->role, ['admin', 'super-admin'])) {
                     return true;
                 }

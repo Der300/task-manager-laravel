@@ -14,7 +14,7 @@
                 data-target="#sidebar-user-dropdown" aria-expanded="false" aria-controls="sidebar-user-dropdown"
                 style="cursor: pointer;" id="sidebar-user-toggle">
                 <div class="image">
-                    <img src="{{ asset('images/users/avatar_' . str_replace('-', '', \Illuminate\Support\Str::slug(auth()->user()->name)) . '.svg') }}"
+                    <img src="{{ asset('images/users/'.auth()->user()->image) }}"
                         class="img-circle elevation-2" alt="{{ auth()->user()->name }}">
 
                 </div>
@@ -32,13 +32,13 @@
                     <i class="fas fa-user mr-2"></i> Profile
                 </a>
                 <div class="dropdown-divider"></div>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                <form action="{{ route('logout') }}" method="POST">
                     @csrf
+                    <a class="dropdown-item text-danger" href="#"
+                        onclick="event.preventDefault();this.closest('form').submit();">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                    </a>
                 </form>
-                <a class="dropdown-item text-danger" href="#"
-                    onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                </a>
             </div>
         </div>
 
@@ -81,6 +81,13 @@
                                         <p>New User</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('users.recycle') }}"
+                                        class="nav-link {{ request()->routeIs('users.recycle') ? 'active' : '' }}">
+                                        <i class="fa fa-trash nav-icon" style="margin-left:12px" aria-hidden="true"></i>
+                                        <p>User recycle</p>
+                                    </a>
+                                </li>
                             @endif
                         </ul>
                     </li>
@@ -108,6 +115,15 @@
                                 <a href="{{ route('projects.create') }}" class="nav-link">
                                     <i class="fa fa-plus nav-icon ml-3"></i>
                                     <p>New Project</p>
+                                </a>
+                            </li>
+                        @endif
+                        @if ($roleAboveManager)
+                            <li class="nav-item">
+                                <a href="{{ route('projects.recycle') }}"
+                                    class="nav-link {{ request()->routeIs('projects.recycle') ? 'active' : '' }}">
+                                    <i class="fa fa-trash nav-icon ml-3" aria-hidden="true"></i>
+                                    <p>Project recycle</p>
                                 </a>
                             </li>
                         @endif
@@ -139,9 +155,26 @@
                                 </a>
                             </li>
                         @endif
+                        @if ($roleAboveLeader)
+                            <li class="nav-item">
+                                <a href="{{ route('tasks.recycle') }}"
+                                    class="nav-link {{ request()->routeIs('tasks.recycle') ? 'active' : '' }}">
+                                    <i class="fa fa-trash nav-icon ml-3" aria-hidden="true"></i>
+                                    <p>Task recycle</p>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </li>
-
+                @if ($roleAboveManager)
+                    <li class="nav-item">
+                        <a href="{{ route('comments.recycle') }}"
+                            class="nav-link {{ request()->routeIs('comments.recycle') ? 'active' : '' }}">
+                            <i class="fa fa-trash nav-icon" aria-hidden="true"></i>
+                            <p>Comment recycle</p>
+                        </a>
+                    </li>
+                @endif
                 <li class="nav-item">
                     <a href="{{ route('notifications.index') }}"
                         class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">

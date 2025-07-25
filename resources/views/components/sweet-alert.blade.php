@@ -16,7 +16,7 @@
             title: 'Error!',
             text: "{{ session('error') }}",
             timer: 1500,
-            showConfirmButton: false,
+            showConfirmButton: true,
         });
     @endif
 

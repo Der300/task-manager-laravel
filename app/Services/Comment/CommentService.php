@@ -44,4 +44,39 @@ class CommentService
             ->limit(50)
             ->get();
     }
+
+    /**
+     * Lấy danh sách comment trong hệ thống hoặc theo filters cụ thể.
+     *
+     * @param array $filters VD: ['user_id' => 1] $field === 'not_in' value phải là mảng kiểu ['not_in' => ['key' => ['value1', 'value2']]]
+     * @return \Illuminate\Support\Collection
+     */
+    public function getComments(array $filters = []): Collection
+    {
+        $query = Comment::query();
+
+        foreach ($filters as $field => $value) {
+            if ($field === 'not_in' && is_array($value)) {
+                foreach ($value as $notInField => $notInValues) {
+                    $query->whereNotIn($notInField, $notInValues);
+                }
+            } elseif (is_array($value) && !empty($value)) {
+                $query->whereIn($field, $value);
+            } elseif (!is_null($value)) {
+                $query->where($field, $value);
+            }
+        }
+        return $query->get();
+    }
+
+    /**
+     * Lấy tổng số comment trong hệ thống hoặc theo filters cụ thể.
+     *
+     * @param array $filters VD: ['user_id' => 1]
+     * @return int Tổng số project
+     */
+    public function countComments(array $filters = []): int
+    {
+        return $this->getComments($filters)->count();
+    }
 }
