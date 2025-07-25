@@ -12,9 +12,11 @@ use App\Models\User;
 use App\Services\User\UserService;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Request;
 
 class UserController extends Controller
 {
@@ -27,19 +29,22 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(HttpRequest $request)
     {
         $user = Auth::user();
+        $departments = User::distinct()->pluck('department')->filter()->sort()->values();
+        $positions = User::distinct()->pluck('position')->filter()->sort()->values();
+        $filters = $request->only(['search', 'department', 'position', 'status']);
+        
         if ($user->hasAnyRole(['admin', 'super-admin'])) {
-            $data = $this->userService->getDataUserTable();
-            return view('users.index', ['data' => $data]);
+            $data = $this->userService->getDataUserTable(filters: $filters);
+        } elseif ($user->hasRole('manager')) {
+            $data = $this->userService->getDataUserTable($user->department, statusActive: true, exceptClient: false, filters: $filters);
+        } else {
+            $data = $this->userService->getDataUserTable($user->department, true, true, filters: $filters);
         }
-        if ($user->hasRole('manager')) {
-            $data = $this->userService->getDataUserTable($user->department, statusActive: true, exceptClient: false);
-            return view('users.index', ['data' => $data]);
-        }
-        $data = $this->userService->getDataUserTable($user->department, true, true);
-        return view('users.index', ['data' => $data]);
+
+        return view('users.index', compact('data', 'departments', 'positions'));
     }
 
     public function recycle()

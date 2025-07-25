@@ -50,32 +50,58 @@ class ViewServiceProvider extends ServiceProvider
 
         view()->composer('users.*', function ($view) {
             $user = Auth::user();
+            $roleAboveManager = $user ? $user->hasAnyRole(['admin', 'super-admin']) : false;
+
             $canResetPassword = function ($item) use ($user) {
                 return $user && (
                     $user->hasAnyRole(['admin', 'super-admin']) ||
-                    ($user->department === $item->department & $user->hasAnyRole(['manager', 'leader']))
+                    ($user->department === $item->department & $user->hasAnyRole(['manager', 'leader']) & $user->id !== $item->id)
                 );
             };
 
             $canManageUser = function ($item) use ($user) {
-                if (!$user || !$item) return false;
-                if ($user->hasRole('super-admin') && $item->role !== 'super-admin') {
-                    return true;
-                }
+                $level = [
+                    'super-admin' => 4,
+                    'admin'       => 3,
+                    'manager'     => 2,
+                    'leader'      => 1,
+                    'member'      => 0,
+                ];
 
-                if ($user->hasRole('admin') && !in_array($item->role, ['admin', 'super-admin'])) {
-                    return true;
-                }
+                $userRoleLevel  = $level[$user->role] ?? -1;
+                $itemRoleLevel  = $level[$item->role] ?? -1;
 
-                return false;
+                if ($user->id === $item->id) return false;
+
+                return $userRoleLevel > $itemRoleLevel;
             };
+
+            $canSeeProfile  = function ($item) use ($user) {
+                if (!$user || !$item) return false;
+
+                if ($user->hasRole('super-admin')) {
+                    return true;
+                }
+
+                if ($user->hasRole('admin')) {
+                    if ($user->id === $item->id) return true;
+
+                    if (!in_array($item->role, ['admin', 'super-admin'])) return true;
+
+                    return false;
+                }
+
+                return $user->id === $item->id;
+            };
+
 
             $view->with([
                 'department' => $user ? $user->department : null,
-                'roleAboveManager' => $user ? $user->hasAnyRole(['admin', 'super-admin']) : false,
+                'roleAboveManager' => $roleAboveManager,
                 'roleAboveMember' => $user ? $user->hasAnyRole(['admin', 'super-admin', 'manager', 'leader']) : false,
                 'canResetPassword' => $canResetPassword,
                 'canManageUser' => $canManageUser,
+                'canSeeProfile' => $canSeeProfile,
             ]);
         });
     }

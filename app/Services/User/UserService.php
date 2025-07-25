@@ -61,9 +61,10 @@ class UserService
      * @param ?string currentDepartment loc theo Department
      * @param bool $statusActive loc theo status
      * @param bool $exceptClient bỏ user là client
+     * @param array $filters filters
      * @return LengthAwarePaginator chứa users theo các điều kiện lọc tuỳ chọn.
      */
-    public function getDataUserTable(?string $currentDepartment = null, bool $statusActive = false, bool $exceptClient = false): LengthAwarePaginator
+    public function getDataUserTable(?string $currentDepartment = null, bool $statusActive = false, bool $exceptClient = false, array $filters = []): LengthAwarePaginator
     {
         $itemsPerPage = env('ITEM_PER_PAGE', 20);
 
@@ -77,6 +78,20 @@ class UserService
         }
         if ($exceptClient) {
             $query->whereNot('role', 'client');
+        }
+
+        if (!empty($filters['search'])) {
+            $value = strtolower($filters['search']);
+            $query->where(function ($q) use ($value) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$value}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$value}%"]);
+            });
+        }
+
+        foreach ($filters as $field => $value) {
+            if (!empty($value) && $field !== 'search') {
+                $query->where($field, $value);
+            }
         }
 
         return $query->orderBy('role', 'asc')
