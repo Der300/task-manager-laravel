@@ -17,6 +17,7 @@ use Str;
 class UserService
 {
     protected string $imageFolder = 'images/users/';
+    protected string $imageFolderTrash = 'images/users/trash';
     /**
      * Lấy danh sách user trong hệ thống hoặc theo filters cụ thể.
      *
@@ -126,24 +127,41 @@ class UserService
     }
 
     /**
-     * Xóa ảnh
+     * Đưa ảnh vào recycle
      * @param string $imageName tên ảnh cần xóa
      * @return void
      */
     public function deleteImage(string $imageName): void
     {
-        $imagePath = public_path($this->imageFolder . $imageName);
-        if (file_exists($imagePath)) {
-            unlink($imagePath);
+        $originalPath = public_path($this->imageFolder . $imageName);
+        $trashPath = public_path($this->imageFolderTrash . $imageName);
+
+        if (file_exists($originalPath)) {
+            rename($originalPath, $trashPath);
         }
     }
 
     /**
-     * Lấy dữ liệu trừ form tạo user
-     * @param ?User $user tên user nếu 
+     * Xóa ảnh
+     * @param string $imageName tên ảnh cần xóa
      * @return void
      */
-    public function getUserDataFromForm(?User $user = null, bool $isCreate = false): array
+    public function restoreImage(string $imageName): void
+    {
+        $trashPath = public_path($this->imageFolderTrash . $imageName);
+        $originalPath = public_path($this->imageFolder . $imageName);
+
+        if (file_exists($trashPath)) {
+            rename($trashPath, $originalPath);
+        }
+    }
+
+    /**
+     * Lấy dữ liệu để điền form tạo hoặc edit user
+     * @param ?User $user tên user nếu có
+     * @return void
+     */
+    public function getUserToShowOrEdit(?User $user = null, bool $isCreate = false): array
     {
         $canAssignSuperAdmin = Auth::user()->hasRole('super-admin') && $user?->hasRole('super-admin');
 
@@ -156,7 +174,7 @@ class UserService
             'positions' => config('positions'),
             'departments' => config('departments'),
             'roles' => $roles,
-            'is_create' => $isCreate,
+            'isCreate' => $isCreate,
 
         ];
     }
@@ -198,19 +216,29 @@ class UserService
                 'message' => "Cannot delete this user. Related data found: $details.",
             ];
         }
+        try {
+            DB::beginTransaction();
+            // Xóa liên kết quyền
+            DB::table('model_has_roles')->where('model_type', User::class)->where('model_id', $user->id)->delete();
+            DB::table('model_has_permissions')->where('model_type', User::class)->where('model_id', $user->id)->delete();
 
-        // Xóa liên kết quyền
-        DB::table('model_has_roles')->where('model_type', User::class)->where('model_id', $user->id)->delete();
-        DB::table('model_has_permissions')->where('model_type', User::class)->where('model_id', $user->id)->delete();
+            // Xóa user
+            $user->forceDelete();
+            // xóa ảnh
+            $this->deleteImage($user->image);
+            DB::commit();
 
-        // Xóa user
-        $user->forceDelete();
-        // xóa ảnh
-        $this->deleteImage($user->image);
-
-        return [
-            'success' => true,
-            'message' => 'User has been permanently deleted.',
-        ];
+            return [
+                'success' => true,
+                'message' => 'User has been permanently deleted.',
+            ];
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->restoreImage($user->image);
+            return [
+                'success' => false,
+                'message' => 'An error occurred while deleting project.',
+            ];
+        }
     }
 }

@@ -3,18 +3,32 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class UserPolicy
 {
+
+    private function isAdminOrSuperAdmin(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin']);
+    }
+
     /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, User $model): bool
     {
-        if ($user->hasRole(['super-admin', 'admin'])) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
+
+        if ($user->hasRole('admin')) {
+            if ($user->id === $model->id) return true;
+
+            if (!in_array($model->role, ['admin', 'super-admin'])) return true;
+
+            return false;
+        }
+
         return $user->id === $model->id;
     }
 
@@ -23,9 +37,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        if ($user->hasRole(['super-admin', 'admin'])) {
-            return true;
-        }
-        return $user->id === $model->id;
+        return $this->isAdminOrSuperAdmin($user) || $user->id === $model->id;
     }
+
 }

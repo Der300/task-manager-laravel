@@ -27,5 +27,4 @@ Route::middleware(['auth', 'verified'])
 
         Route::put('{user}', 'update')->name('update');
         Route::get('{user}', 'show')->name('show');
-        Route::get('{user}/edit', 'edit')->name('edit');
     });

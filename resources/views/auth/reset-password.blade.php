@@ -81,9 +81,9 @@
         </div>
 
         {{-- hien thi error --}}
-        @error('password_confirmation')
+         @if ($errors->has('password') || $errors->has('password_confirmation'))
             <div class="alert alert-danger">
-                {{ $message }}
+                {{ $errors->first('password') ?: $errors->first('password_confirmation') }}
             </div>
         @enderror
     </form>

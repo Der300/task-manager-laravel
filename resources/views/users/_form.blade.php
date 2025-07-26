@@ -1,10 +1,10 @@
 <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="col-md-12 col-sm-12">
     @csrf
-    @if (!$is_create)
+    @if (!$isCreate)
         @method('PUT')
     @endif
-    <div class="card card-{{ $is_create ? 'success' : 'warning' }} w-100">
-        <div class="card-header">{{ $is_create ? 'Information of new member' : 'Profile Information' }}</div>
+    <div class="card card-{{ $isCreate ? 'success' : 'warning' }} w-100">
+        <div class="card-header">{{ $isCreate ? 'Information of new member' : 'Profile Information' }}</div>
         <div class="w-100 card-body row justify-content-center">
             <div class="col-md-6 col-sm-12">
                 <div class="form-group">
@@ -122,13 +122,13 @@
         </div>
         <div class="card-footer text-center">
             <button type="submit"
-                class="btn btn-{{ $is_create ? 'success' : 'warning' }}">{{ $is_create ? 'Create' : 'Update' }}</button>
+                class="btn btn-{{ $isCreate ? 'success' : 'warning' }}">{{ $isCreate ? 'Create' : 'Update' }}</button>
         </div>
     </div>
 </form>
-
 @push('js')
     <script>
+        // ẩn thông báo lỗi khi focus input
         document.addEventListener('DOMContentLoaded', () => {
             $('.form-control').on('focus', function() {
                 $(this).removeClass('is-invalid');

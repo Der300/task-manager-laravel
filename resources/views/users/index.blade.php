@@ -128,7 +128,7 @@
                                                     method="POST" class="mx-1">
                                                     @csrf
                                                     <span data-toggle="tooltip" data-placement="top" title="Reset Password">
-                                                        <button class="btn btn-info btn-sm px-2 py-1">
+                                                        <button type="submit" class="btn btn-info btn-sm px-2 py-1">
                                                             <i class="fa fa-key" aria-hidden="true"></i>
                                                         </button>
                                                     </span>

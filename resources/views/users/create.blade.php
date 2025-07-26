@@ -7,6 +7,6 @@
         'positions' => $positions,
         'departments' => $departments,
         'roles' => $roles,
-        'is_create' => $is_create,
+        'isCreate' => $isCreate,
     ])
 @endsection

@@ -8,7 +8,7 @@
             'positions' => $positions,
             'departments' => $departments,
             'roles' => $roles,
-            'is_create' => $is_create,
+            'isCreate' => $isCreate,
         ])
         <form method="POST" action="{{ route('password.update') }}" class="col-md-12 col-sm-12">
             @csrf
