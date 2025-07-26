@@ -7,6 +7,8 @@ use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Models\Project;
 use App\Models\Status;
+use App\Models\User;
+use App\Notifications\ProjectAssigned;
 use App\Services\Project\ProjectService;
 use App\Services\Task\TaskService;
 use Exception;
@@ -32,6 +34,7 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
+
         $this->authorize('viewAny', Project::class);
         $user = Auth::user();
 
@@ -66,11 +69,13 @@ class ProjectController extends Controller
         $data = $request->validated();
         try {
             DB::beginTransaction();
-
-            Project::create($data);
-
-
+            $project = Project::create($data);
             DB::commit();
+
+            // gửi thông báo
+            if ($data['assigned_to']) {
+                User::find($data['assigned_to'])->notify(new ProjectAssigned($project));
+            }
 
             return redirect()->route('projects.index')->with('success', 'Projects created successfully!');
         } catch (Exception $e) {

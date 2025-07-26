@@ -305,8 +305,8 @@ class DashboardService
 
                 'task_id' => $comment->task->id,
                 'task_name' => $comment->task->name,
-                'project_id' => $comment->task->project->id,
-                'project_name' => $comment->task->project->name,
+                'project_id' => $comment->task->project?->id,
+                'project_name' => $comment->task->project?->name,
             ];
         })->toArray();
     }

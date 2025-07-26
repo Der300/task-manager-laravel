@@ -42,16 +42,18 @@
                     <span class="badge badge-warning navbar-badge">{{ $notifications->count() ?? 0 }}</span>
                 @endif
             </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+            <div class="dropdown-menu dropdown-menu dropdown-menu-right">
                 <span class="dropdown-item dropdown-header">{{ $notifications?->count() ?? 0 }} Unread
                     Notifications</span>
                 @foreach ($notifications ?? [] as $notification)
                     <div class="dropdown-divider"></div>
-                    <a href="{{ route('notifications.read', $notification->id) }}" class="dropdown-item">
-                        @if ($notification->data['type'] === 'assigned')
+                    <a href="{{ route('notifications.read', ['id' => $notification->id]) }}" class="dropdown-item">
+                        @if ($notification->data['type'] === 'assignedTask')
                             <i class="fas fa-tasks mr-2"></i>
                         @elseif($notification->data['type'] === 'comment')
                             <i class="fas fa-comments mr-2"></i>
+                        @elseif($notification->data['type'] === 'assignedProject')
+                            <i class="fas fa-project-diagram mr-2"></i>
                         @endif
 
                         {{ $notification->data['title'] ?? 'Notification' }}

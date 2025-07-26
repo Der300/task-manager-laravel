@@ -87,15 +87,15 @@
                                 <td class="align-middle">
                                     {{ $item->description }}
                                 </td>
-                                <td class="align-middle" style="background-color: {{ $item->status->color }}">
-                                    {{ $item->status->name }}
+                                <td class="align-middle" style="background-color: {{ $item->status?->color }}">
+                                    {{ $item->status?->name }}
                                 </td>
                                 <td class="align-middle">
-                                    {{ $item->assignedUser->name }}
+                                    {{ $item->assignedUser?->name }}
                                 </td>
                                 @if ($exceptClient)
                                     <td class="align-middle">
-                                        {{ $item->clientUser->name }}
+                                        {{ $item->clientUser?->name }}
                                     </td>
                                     <td class="align-middle">
                                         {{ \Carbon\Carbon::parse($item->due_date)?->format('d/m/Y') ?? '--' }}
