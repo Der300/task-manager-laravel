@@ -59,7 +59,7 @@
     @include('components.sweet-alert')
     {{-- @yield('script-confirm') --}}
     {{-- search --}}
-    <script>
+    <script type="text/javascript">
         const searchInput = document.getElementById('global-search');
         const resultBox = document.getElementById('search-results');
         let delayTimer;
@@ -114,6 +114,7 @@
                 resultBox.style.display = 'none';
             }
         });
+
     </script>
 
 </body>

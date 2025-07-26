@@ -129,8 +129,6 @@ class UserController extends Controller
             unset($data['image']); // tránh ghi null nếu không có ảnh mới
         }
 
-        // Cập nhật user, trả về true/false
-        $updated = $user->update($data);
 
         // Cập nhật role nếu thay đổi
         $currentRole = $user->getRoleNames()->first();
@@ -138,10 +136,14 @@ class UserController extends Controller
             $user->syncRoles([$data['role']]);
         }
 
-        if ($updated) {
+        try {
+            // Cập nhật user
+            $user->update($data);
+
             return back()->with('success', 'User updated successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'User updated fail!');
         }
-        return back()->with('error', 'User updated fail!');
     }
 
     /**

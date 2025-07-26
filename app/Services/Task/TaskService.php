@@ -128,11 +128,30 @@ class TaskService
     /**
      * Lấy tasks đang active(status khác done, cancel) co project id
      *
+     * @param string $projectId id project
      * @return \Illuminate\Support\Collection tasks
      */
     public function getActiveTasksWithProjectId(string $projectId): Collection
     {
         return $this->baseActiveTaskQuery()
+            ->where('project_id', $projectId)
+            ->limit(50)
+            ->get();
+    }
+
+    /**
+     * Lấy toàn bộ tasks co project id
+     *
+     * @param string $projectId id project
+     * @return \Illuminate\Support\Collection tasks
+     */
+    public function getAllTasksWithProjectId(string $projectId): Collection
+    {
+        return Task::with([
+            'status:id,name,color',
+            'assignedUser:id,name',
+            'project'
+        ])
             ->where('project_id', $projectId)
             ->limit(50)
             ->get();

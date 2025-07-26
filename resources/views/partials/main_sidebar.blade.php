@@ -118,7 +118,7 @@
                                 </a>
                             </li>
                         @endif
-                        @if ($roleAboveManager)
+                        @if ($roleAboveLeader)
                             <li class="nav-item">
                                 <a href="{{ route('projects.recycle') }}"
                                     class="nav-link {{ request()->routeIs('projects.recycle') ? 'active' : '' }}">

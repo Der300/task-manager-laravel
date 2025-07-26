@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Project;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProjectRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UpdateProjectRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +22,26 @@ class UpdateProjectRequest extends FormRequest
      */
     public function rules(): array
     {
+
+        $slugRule = Rule::unique('projects', 'slug');
+
+        if ($this->project?->id) {
+            $slugRule->ignore($this->project->id);
+        }
         return [
-            //
+            'name' => ['required', 'string', 'max:50'],
+            'slug' => ['required', 'string', 'max:100', $slugRule],
+            'description' => ['nullable', 'string'],
+
+            'status_id' => ['nullable', 'exists:statuses,id'],
+            'issue_type_id' => ['nullable', 'exists:issue_types,id'],
+
+            'created_by' => ['nullable', 'exists:users,id'],
+            'assigned_to' => ['nullable', 'exists:users,id'],
+            'client_id' => ['nullable', 'exists:users,id'],
+
+            'start_date' => ['nullable', 'date', 'before_or_equal:due_date'],
+            'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
         ];
     }
 }

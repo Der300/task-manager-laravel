@@ -39,4 +39,5 @@ class Task extends Model
     {
         return $this->belongsTo(IssueType::class, 'issue_type_id');
     }
+
 }

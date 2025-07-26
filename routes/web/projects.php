@@ -8,21 +8,20 @@ Route::middleware(['auth', 'verified'])
     ->name('projects.')
     ->controller(ProjectController::class)
     ->group(function () {
-        Route::get('{project}', 'show')->name('show');
         Route::get('/', 'index')->name('index');
 
         Route::middleware('role:admin|super-admin|manager')->group(function () {
-            Route::get('create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
-            Route::get('{project}/edit', 'edit')->name('edit');
+            Route::get('create', 'create')->name('create');
+            Route::get('make-slug', 'makeSlug')->name('make_slug');
+            Route::get('recycle', 'recycle')->name('recycle');
+
+            Route::post('{project}/restore', 'restore')->withTrashed()->name('restore');
+            Route::delete('{project}/force-delete', 'forceDelete')->withTrashed()->middleware('role:admin|super-admin', 'password.confirm')->name('force-delete');
+
             Route::put('{project}', 'update')->name('update');
-
-            Route::middleware('role:admin|super-admin')->group(function () {
-                Route::get('recycle', 'recycle')->name('recycle');
-                Route::delete('{project}', 'softDelete')->name('soft-delete');
-                Route::post('{project}/restore', 'restore')->name('restore');
-                Route::delete('{project}/force-delete', 'forceDelete')->name('force-delete');
-
-            });
+            Route::delete('{project}', 'softDelete')->name('soft-delete');
         });
+
+        Route::get('{project}', 'show')->name('show');
     });
