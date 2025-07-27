@@ -10,6 +10,7 @@ class Comment extends Model
     /** @use HasFactory<\Database\Factories\CommentFactory> */
     use HasFactory;
     public $table = 'comments';
+    protected $guarded = [];
 
     public function task()
     {

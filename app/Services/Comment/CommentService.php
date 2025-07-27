@@ -23,16 +23,16 @@ class CommentService
         $taskService = new TaskService();
         if ($currentUser->hasRole('manager')) {
             $projectIds = $projectService->getProjectAssignedIdsWithUser($currentUser->id);
-            
+
             $taskIds = $taskService->getActiveTaskIdsWithArrayProjectId($projectIds);
 
             $query->whereIn('task_id', $taskIds);
-        }elseif($currentUser->hasRole('member')){
+        } elseif ($currentUser->hasRole('member')) {
             $taskIds = $taskService->getTaskWithUserId($currentUser->id)->pluck('id');
 
             $query->whereIn('task_id', $taskIds);
-        }elseif($currentUser->hasRole('client')){
-            $projectIds = $projectService->getProjects(['client_id'=> $currentUser->id])->pluck('id');
+        } elseif ($currentUser->hasRole('client')) {
+            $projectIds = $projectService->getProjects(['client_id' => $currentUser->id])->pluck('id');
 
             $taskIds = $taskService->getActiveTaskIdsWithArrayProjectId($projectIds);
 
@@ -78,5 +78,13 @@ class CommentService
     public function countComments(array $filters = []): int
     {
         return $this->getComments($filters)->count();
+    }
+
+    public function getAllCommentWithTaskId(string $taskId): Collection
+    {   
+        return Comment::with('user:id,name,image,position,department,role')
+        ->where('task_id', $taskId)
+            ->orderBy('updated_at', 'desc')
+            ->get();
     }
 }

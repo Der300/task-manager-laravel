@@ -78,7 +78,6 @@
                     .then(res => res.json())
                     .then(data => {
                         let html = '';
-                        console.log(data);
 
                         if (data.users.length) {
                             data.users.forEach(user => {
