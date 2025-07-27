@@ -97,7 +97,7 @@ class UserController extends Controller
             DB::rollback();
             // Xóa ảnh nếu đã upload nhưng transaction bị fail
             if (!empty($imageName)) {
-                $this->userService->deleteImage($imageName);
+                $this->userService->moveImageToTrash($imageName);
             }
             return back()->with('error', 'Failed to create user. Please try again.');
         }
@@ -152,9 +152,15 @@ class UserController extends Controller
     public function softDelete(User $user)
     {
         try {
+            DB::beginTransaction();
+
             $user->delete(); // Soft delete
+
+            DB::commit();
+
             return redirect()->route('users.index')->with('success', 'User moved to recycle successfully.');
         } catch (\Exception $e) {
+
             return redirect()->route('users.index')->with('error', 'Failed to move user to recycle.');
         }
     }

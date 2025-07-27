@@ -131,7 +131,7 @@ class UserService
      * @param string $imageName tên ảnh cần xóa
      * @return void
      */
-    public function deleteImage(string $imageName): void
+    public function moveImageToTrash(string $imageName): void
     {
         $originalPath = public_path($this->imageFolder . $imageName);
         $trashPath = public_path($this->imageFolderTrash . $imageName);
@@ -142,7 +142,7 @@ class UserService
     }
 
     /**
-     * Xóa ảnh
+     * Restore ảnh
      * @param string $imageName tên ảnh cần xóa
      * @return void
      */
@@ -153,6 +153,20 @@ class UserService
 
         if (file_exists($trashPath)) {
             rename($trashPath, $originalPath);
+        }
+    }
+
+    /**
+     * xóa ảnh vĩnh viễn
+     * @param string $imageName tên ảnh cần xóa
+     * @return void
+     */
+    public function deleteImagePermanently(string $imageName): void
+    {
+        $trashPath = public_path($this->imageFolderTrash . $imageName);
+
+        if (file_exists($trashPath)) {
+            unlink($trashPath);
         }
     }
 
@@ -225,7 +239,7 @@ class UserService
             // Xóa user
             $user->forceDelete();
             // xóa ảnh
-            $this->deleteImage($user->image);
+            $this->deleteImagePermanently($user->image);
             DB::commit();
 
             return [
