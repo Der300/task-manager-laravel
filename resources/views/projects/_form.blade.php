@@ -4,7 +4,7 @@
         @method('PUT')
     @endif
     <div class="card card-{{ $isCreate ? 'success' : 'warning' }} w-100">
-        <div class="card-header">{{ $isCreate ? 'New Project Information' : 'Edit Project Details' }}</div>
+        <div class="card-header">{{ $isCreate ? 'New Project Information' : 'Project Details' }}</div>
         <div class="w-100 card-body row justify-content-center">
             <div class="col-md-6 col-sm-12">
                 {{-- Project Name --}}

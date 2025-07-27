@@ -13,7 +13,7 @@ class ProjectPolicy
      */
     public function viewAny(User $user): bool
     {
-        // nếu user không có project nào thì vào project list được
+        // nếu client không có project nào thì không vào project list được
         return !$user->hasRole('client') || $user->projects()->exists();
     }
 

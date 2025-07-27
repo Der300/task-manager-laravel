@@ -23,7 +23,7 @@ class UpdateProjectRequest extends FormRequest
     public function rules(): array
     {
 
-        $slugRule = Rule::unique('projects', 'slug');
+        $slugRule = Rule::unique('projects', 'slug'); //Rule unique làm query thẳng trên bảng, không lọc soft delete
 
         if ($this->project?->id) {
             $slugRule->ignore($this->project->id);

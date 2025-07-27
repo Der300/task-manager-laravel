@@ -213,7 +213,7 @@ class ProjectService
     public function getDataProjectRecycleTable(?string $assignedId = null): LengthAwarePaginator
     {
         $itemsPerPage = env('ITEM_PER_PAGE', 20);
-        $query = Project::onlyTrashed();
+        $query = Project::onlyTrashed()->with('status:id,name,color','clientUser:id,name');
 
         if ($assignedId) {
             $query->where('assigned_to', $assignedId);

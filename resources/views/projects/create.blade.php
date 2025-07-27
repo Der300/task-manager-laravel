@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'Project Detail')
+@section('title', 'Project Create')
 @section('content_wrapper')
     <div class="row">
         @include('projects._form', [

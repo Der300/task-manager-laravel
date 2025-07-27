@@ -6,7 +6,7 @@
             <form method="GET" action="{{ route('projects.index') }}" class="row">
                 <div class="col-md-2 mb-2">
                     @if ($roleAboveLeader)
-                        <a href="{{ route('users.create') }}" class="btn btn-success">
+                        <a href="{{ route('projects.create') }}" class="btn btn-success">
                             <i class="fa fa-plus mr-2" aria-hidden="true"></i> Create Projects
                         </a>
                     @endif
