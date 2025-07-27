@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Services\Task\TaskService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
 {
     /** @use HasFactory<\Database\Factories\TaskFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+
+    protected $guarded = [];
 
     public function project()
     {
@@ -40,4 +44,20 @@ class Task extends Model
         return $this->belongsTo(IssueType::class, 'issue_type_id');
     }
 
+    // observer xóa file
+    protected static function booted(): void
+    {
+        static::deleting(function (Task $task) {
+            // Nếu là force delete
+            if ($task->isForceDeleting()) {
+                app(TaskService::class)->deleteTaskFilesPermanently($task);
+            } else {
+                app(TaskService::class)->moveTaskFilesToTrash($task);
+            }
+        });
+
+        static::restoring(function (Task $task) {
+            app(TaskService::class)->restoreTaskFilesFromTrash($task);
+        });
+    }
 }
