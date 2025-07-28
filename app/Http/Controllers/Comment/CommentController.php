@@ -9,6 +9,11 @@ use App\Http\Requests\Task\UpdateTaskRequest;
 use App\Models\Comment;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\CommentAdded;
+use App\Notifications\CommentForceDeleted;
+use App\Notifications\CommentRestored;
+use App\Notifications\CommentSoftDeleted;
+use App\Notifications\CommentUpdated;
 use App\Notifications\TaskCommented;
 use App\Services\Comment\CommentService;
 use Exception;
@@ -62,28 +67,31 @@ class CommentController extends Controller
     public function store(StoreCommentRequest $request, Task $task)
     {
         $data = $request->validated();
-        $userId = Auth::user()->id;
-        $assigneeTask = $task->assigned_to;
+        $user = Auth::user();
+        $assigneeId = $task->assigned_to;
         try {
             DB::beginTransaction();
             $comment = Comment::create([
                 'task_id' => $task->id,
                 'body' => $data['body'],
-                'user_id' => $userId,
+                'user_id' => $user->id,
             ]);
 
-
             DB::commit();
-            // gửi thông báo
-            if ($assigneeTask) {
-                User::find($assigneeTask)?->notify(new TaskCommented($comment, $task->id));
+            // gửi thông báo nếu người gửi khác assinged_to của task
+            if ($assigneeId && $assigneeId !== $user->id) {
+                User::query()
+                    ->find($assigneeId)?->notify(
+                        new CommentAdded($comment, $task->id, $user->name)
+                    );
             }
 
-            return back()->with('success', 'Comment added!');
+
+            return redirect()->route('tasks.show', ['task' => $task->id])->with('success', 'Comment added!');
         } catch (Exception $e) {
             DB::rollback();
 
-            return back()->with('error', 'Failed to create task. Please try again.');
+            return redirect()->route('tasks.show', ['task' => $task->id])->with('error', 'Failed to create task. Please try again.');
         }
     }
 
@@ -92,10 +100,14 @@ class CommentController extends Controller
      */
     public function update(UpdateCommentRequest $request, Comment $comment)
     {
+        $user = Auth::user();
         $this->authorize('update', $comment);
         $data = $request->validated();
         $comment->body = $data['body'];
         $comment->save();
+        if ($user->id !== $comment->user_id) {
+            $comment->user?->notify(new CommentUpdated($comment, $comment->task_id, $user->name));
+        }
 
         return response()->json(['success' => true]);
     }
@@ -107,9 +119,15 @@ class CommentController extends Controller
     public function softDelete(Comment $comment)
     {
         $this->authorize('softDelete', $comment);
-
+        $user = Auth::user();
         try {
+            DB::beginTransaction();
             $comment->delete(); // Soft delete
+            DB::commit();
+            if ($user->id !== $comment->user_id) {
+                // elequent lấy user dựa theo quan hệ user_id
+                $comment->user?->notify(new CommentSoftDeleted($comment, $user->name));
+            }
 
             return back()->with('success', 'Comment moved to recycle successfully.');
         } catch (\Exception $e) {
@@ -123,9 +141,13 @@ class CommentController extends Controller
     public function restore(Comment $comment)
     {
         $this->authorize('restore', $comment);
+        $user = Auth::user();
         try {
             if ($comment->trashed()) {
                 $comment->restore();
+                if ($user->id !== $comment->user_id) {
+                    $comment->user?->notify(new CommentRestored($comment, $user->name));
+                }
                 return redirect()->route('tasks.show', ['task' => $comment->task_id, 'comment_id' => $comment->id])->with('success', 'Comment restored successfully.');
             }
             return back()->with('error', 'Comment is not deleted.');
@@ -139,8 +161,12 @@ class CommentController extends Controller
      */
     public function forceDelete(Comment $comment)
     {
+        $user = Auth::user();
         try {
             $comment->forceDelete();
+            if ($user->id !== $comment->user_id) {
+                $comment->user?->notify(new CommentForceDeleted($comment, $user->name));
+            }
             return back()->with('success', 'Comment has been permanently deleted.');
         } catch (\Exception $e) {
             return back()->with('error', 'An error occurred while deleting comment.');

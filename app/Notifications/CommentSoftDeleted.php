@@ -2,24 +2,24 @@
 
 namespace App\Notifications;
 
-use App\Models\Task;
+use App\Models\Comment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Auth;
 
-class TaskAssigned extends Notification
+class CommentSoftDeleted extends Notification
 {
     use Queueable;
-    protected $task;
+    protected $comment;
     protected $createdByName;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, string $createdByName)
+    public function __construct(Comment $comment, string $createdByName)
     {
-        $this->task = $task;
+        $this->comment = $comment;
         $this->createdByName = $createdByName;
     }
 
@@ -30,21 +30,21 @@ class TaskAssigned extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database']; //nơi lưu
+        return ['database'];
     }
 
     /**
      * Get the database representation of the notification.
      */
-    public function toDatabase(object $notifiable): array
+    public function toDataBase(object $notifiable): array
     {
         return [
             'created_by' => $this->createdByName,
-            'assigned_to' => $this->task->assignedUser->name,
-            'title' => 'A new task has been assigned to you',
-            'object_name' => $this->task->name,
-            'url' => route('tasks.show', $this->task->id),
-            'type' => 'task',
+            'assigned_to' => $this->comment->user->name,
+            'title' => 'Your comment has been moved to recycle',
+            'object_name' => $this->comment->body,
+            'url' => route('notifications.index'),
+            'type' => 'comment',
         ];
     }
 }

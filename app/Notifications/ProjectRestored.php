@@ -2,24 +2,23 @@
 
 namespace App\Notifications;
 
-use App\Models\Task;
+use App\Models\Project;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Auth;
 
-class TaskAssigned extends Notification
+class ProjectRestored extends Notification
 {
     use Queueable;
-    protected $task;
+    protected $project;
     protected $createdByName;
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, string $createdByName)
+    public function __construct(Project $project, string $createdByName)
     {
-        $this->task = $task;
+        $this->project = $project;
         $this->createdByName = $createdByName;
     }
 
@@ -30,7 +29,7 @@ class TaskAssigned extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database']; //nơi lưu
+        return ['database'];
     }
 
     /**
@@ -40,11 +39,11 @@ class TaskAssigned extends Notification
     {
         return [
             'created_by' => $this->createdByName,
-            'assigned_to' => $this->task->assignedUser->name,
-            'title' => 'A new task has been assigned to you',
-            'object_name' => $this->task->name,
-            'url' => route('tasks.show', $this->task->id),
-            'type' => 'task',
+            'assigned_to' => $this->project->assignedUser->name,
+            'title' => 'You project has been restored',
+            'object_name' => $this->project->name,
+            'url' => route('projects.show', $this->project),
+            'type' => 'project',
         ];
     }
 }

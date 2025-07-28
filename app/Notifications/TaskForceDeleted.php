@@ -7,9 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Auth;
 
-class TaskAssigned extends Notification
+class TaskForceDeleted extends Notification
 {
     use Queueable;
     protected $task;
@@ -43,7 +42,7 @@ class TaskAssigned extends Notification
             'assigned_to' => $this->task->assignedUser->name,
             'title' => 'A new task has been assigned to you',
             'object_name' => $this->task->name,
-            'url' => route('tasks.show', $this->task->id),
+            'url' => route('notifications.index'),
             'type' => 'task',
         ];
     }

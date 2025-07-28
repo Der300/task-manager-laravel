@@ -9,6 +9,8 @@ use App\Models\Task;
 use App\Models\Status;
 use App\Models\User;
 use App\Notifications\TaskAssigned;
+use App\Notifications\TaskSoftDeleted;
+use App\Notifications\TaskUpdated;
 use App\Services\Comment\CommentService;
 use App\Services\Task\TaskService;
 use Exception;
@@ -66,15 +68,17 @@ class TaskController extends Controller
     public function store(StoreTaskRequest $request)
     {
         $data = $request->validated();
+        $user = Auth::user();
         try {
             DB::beginTransaction();
             $task = Task::create($data);
             DB::commit();
 
             // gửi thông báo
-            if ($data['assigned_to']) {
-                User::find($data['assigned_to'])->notify(new TaskAssigned($task));
+            if ($user->id !== $task->assigned_to) {
+                $task->assignedUser?->notify(new TaskAssigned($task, $user->name));
             }
+
 
             return redirect()->route('tasks.index')->with('success', 'Tasks created successfully!');
         } catch (Exception $e) {
@@ -103,10 +107,13 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
         $data = $request->validated();
+        $user = Auth::user();
         try {
-            // Cập nhật user, trả về true/false
-            $task->update($data);
 
+            $task->update($data);
+            if ($user->id !== $task->assigned_to) {
+                $task->assignedUser?->notify(new TaskUpdated($task, $user->name));
+            }
             return back()->with('success', 'Task updated successfully!');
         } catch (\Exception $e) {
             return back()->with('error', 'Task updated fail!');
@@ -119,9 +126,12 @@ class TaskController extends Controller
     public function softDelete(Task $task)
     {
         $this->authorize('softDelete', $task);
+        $user = Auth::user();
         try {
             $task->delete(); // Soft delete
-
+            if ($user->id !== $task->assigned_to) {
+                $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
+            }
             return redirect()->route('tasks.index')->with('success', 'Task moved to recycle successfully.');
         } catch (\Exception $e) {
 
@@ -150,9 +160,13 @@ class TaskController extends Controller
     public function restore(Task $task)
     {
         $this->authorize('restore', $task);
+        $user = Auth::user();
         try {
             if ($task->trashed()) {
                 $task->restore();
+                if ($user->id !== $task->assigned_to) {
+                    $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
+                }
                 return redirect()->route('tasks.index')->with('success', 'Task restored successfully.');
             }
             return back()->with('error', 'Task is not deleted.');
@@ -167,8 +181,11 @@ class TaskController extends Controller
     public function forceDelete(Task $task)
     {
         $result = $this->taskService->forceDeleteProject($task);
-
+        $user = Auth::user();
         if ($result['success']) {
+            if ($user->id !== $task->assigned_to) {
+                $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
+            }
             return back()->with('success', $result['message']);
         }
         return back()->with('error', $result['message']);

@@ -55,8 +55,9 @@
 
                                 </span>
                                 </span>
-                                <span class="direct-chat-timestamp float-right">
-                                    {{ $item->updated_at?->format('d/m/Y H:i:s') ?? '--' }}
+                                <span class="direct-chat-timestamp float-right" data-toggle="tooltip" data-placement="top"
+                                    title="{{ $item->created_at?->format('d/m/Y H:i:s') ?? '--' }}">
+                                    {{ $item->updated_at?->diffForHumans() ?? '--' }}
                                 </span>
                             </div>
 
@@ -94,7 +95,8 @@
                                         <li><button class="dropdown-item edit-comment-btn"
                                                 data-id="{{ $item->id }}">Edit</button></li>
                                         <li>
-                                            <form action="{{route('comments.soft-delete',['comment'=>$item->id])}}" method="POST"
+                                            <form action="{{ route('comments.soft-delete', ['comment' => $item->id]) }}"
+                                                method="POST"
                                                 onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?',confirmButtonText: 'yes'})">
                                                 @csrf
                                                 @method('DELETE')

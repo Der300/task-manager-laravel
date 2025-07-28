@@ -1,54 +1,43 @@
 @extends('layouts.master')
 @section('title', 'Notifications')
 @section('content_wrapper')
-    @php
-        $notifications = collect([
-            (object) [
-                'id' => 1,
-                'data' => [
-                    'title' => 'A new task has been assigned to you',
-                    'url' => '/tasks/1',
-                    'task_name' => 'Design Landing Page',
-                    'type' => 'assigned',
-                ],
-                'read_at' => null,
-                'created_at' => Carbon\Carbon::now()->subMinutes(10),
-            ],
-            (object) [
-                'id' => 2,
-                'data' => [
-                    'title' => 'Someone commented on your task',
-                    'url' => '/tasks/2',
-                    'task_name' => 'Fix login bug',
-                    'type' => 'comment',
-                ],
-                'read_at' => Carbon\Carbon::now()->subMinutes(5),
-                'created_at' => Carbon\Carbon::now()->subHours(1),
-            ],
-        ]);
-    @endphp
     <div class="row">
         <div class="col-md-12 col-sm-12">
             @forelse ($notifications ?? [] as $notification)
-                <div class="card mb-3 shadow-sm {{$notification->read_at? '' : 'bg-secondary'}}">
-                    <div class="card-body">
+                <div
+                    class="card mb-3 shadow-sm @if ($isUser) {{ $notification->read_at ? '' : 'bg-secondary' }} @endif">
+                    <div class="card-body pb-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
                                 {{ $notification->data['title'] ?? 'Notification' }}
                             </h5>
-                            @if ($notification->read_at)
-                                <span class="badge badge-secondary">Seen</span>
-                            @else
-                                <span class="badge badge-primary">New</span>
+                            @if ($isUser)
+                                @if ($notification->read_at)
+                                    <span class="badge badge-secondary">Seen</span>
+                                @else
+                                    <span class="badge badge-primary">New</span>
+                                @endif
                             @endif
                         </div>
-                        <p class="card-text mt-2 text-muted">
+                        <div>
+                            <small><i class="fa fa-home text-warning mr-2"
+                                    aria-hidden="true"></i>{{ $notification->data['created_by'] ?? '' }}</small>
+                            <small><i class="fa fa-forward text-primary mx-2"
+                                    aria-hidden="true"></i>{{ $isUser ? 'You' : $notification->data['assigned_to'] }}</small>
+                        </div>
+                        <div class="my-2 w-100 rounded shadow ml-3">
+                            <span>{{ $notification->data['object_name'] ?? '' }}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        @if ($isUser)
+                            <a href="{{ route('notifications.read', $notification->id) }}" class="btn btn-sm btn-primary">
+                                View Details
+                            </a>
+                        @endif
+                        <span class="card-text text-muted float-right">
                             {{ $notification->created_at->diffForHumans() }}
-                        </p>
-                        <a href="{{ route('notifications.read', $notification->id) }}"
-                            class="btn btn-sm btn-primary">
-                            View Details
-                        </a>
+                        </span>
                     </div>
                 </div>
             @empty
@@ -56,6 +45,9 @@
                     You don’t have any notifications.
                 </div>
             @endforelse
+            <div class="col-md-12">
+                {{ $notifications->links() }}
+            </div>
         </div>
     </div>
 @endsection

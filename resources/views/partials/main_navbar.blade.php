@@ -48,15 +48,22 @@
                 @foreach ($notifications ?? [] as $notification)
                     <div class="dropdown-divider"></div>
                     <a href="{{ route('notifications.read', ['id' => $notification->id]) }}" class="dropdown-item">
-                        @if ($notification->data['type'] === 'assignedTask')
-                            <i class="fas fa-tasks mr-2"></i>
-                        @elseif($notification->data['type'] === 'comment')
-                            <i class="fas fa-comments mr-2"></i>
-                        @elseif($notification->data['type'] === 'assignedProject')
-                            <i class="fas fa-project-diagram mr-2"></i>
-                        @endif
-
-                        {{ $notification->data['title'] ?? 'Notification' }}
+                        <div class="d-flex align-items-center">
+                            @if ($notification->data['type'] === 'task')
+                                <i class="fas fa-tasks mr-2"></i>
+                            @elseif($notification->data['type'] === 'comment')
+                                <i class="fas fa-comments mr-2"></i>
+                            @elseif($notification->data['type'] === 'project')
+                                <i class="fas fa-project-diagram mr-2"></i>
+                            @endif
+                            <div>
+                                {{ $notification->data['title'] ?? 'Notification' }}
+                                <small class="d-block">
+                                    <i class="fa fa-pen text-warning" aria-hidden="true"></i>
+                                    {{ Str::limit($notification->data['object_name'], 50, '...') }}
+                                </small>
+                            </div>
+                        </div>
                         <span class="float-right text-muted text-sm">
                             {{ $notification->created_at->diffForHumans() }}
                         </span>

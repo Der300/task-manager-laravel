@@ -2,22 +2,24 @@
 
 namespace App\Notifications;
 
-use App\Models\Task;
+use App\Models\Project;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TaskStatusChanged extends Notification
+class ProjectForceDeleted extends Notification
 {
     use Queueable;
-    protected $task;
+    protected $project;
+    protected $createdByName;
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task)
+    public function __construct(Project $project, string $createdByName)
     {
-        $this->task = $task;
+        $this->project = $project;
+        $this->createdByName = $createdByName;
     }
 
     /**
@@ -36,10 +38,12 @@ class TaskStatusChanged extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Your status task has been changed',
-            'url' => route('tasks.show', $this->task->id),
-            'task_name' => $this->task->name,
-            'type' => 'status_change',
+            'created_by' => $this->createdByName,
+            'assigned_to' => $this->project->assignedUser->name,
+            'title' => 'Your project was permanently deleted',
+            'object_name' => $this->project->name,
+            'url' => route('notifications.index'),
+            'type' => 'project',
         ];
     }
 }

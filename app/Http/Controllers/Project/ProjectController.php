@@ -9,6 +9,9 @@ use App\Models\Project;
 use App\Models\Status;
 use App\Models\User;
 use App\Notifications\ProjectAssigned;
+use App\Notifications\ProjectRestored;
+use App\Notifications\ProjectSoftDeleted;
+use App\Notifications\ProjectUpdated;
 use App\Services\Project\ProjectService;
 use App\Services\Task\TaskService;
 use Exception;
@@ -67,14 +70,15 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request)
     {
         $data = $request->validated();
+        $user = Auth::user();
         try {
             DB::beginTransaction();
             $project = Project::create($data);
             DB::commit();
 
             // gửi thông báo
-            if ($data['assigned_to']) {
-                User::find($data['assigned_to'])->notify(new ProjectAssigned($project));
+            if ($user->id !== $project->assigned_to) {
+                $project->assignedUser?->notify(new ProjectAssigned($project, $user->name));
             }
 
             return redirect()->route('projects.index')->with('success', 'Projects created successfully!');
@@ -106,10 +110,14 @@ class ProjectController extends Controller
     {
         $this->authorize('update', $project);
         $data = $request->validated();
-
+        $user = Auth::user();
         try {
             // Cập nhật user, trả về true/false
             $project->update($data);
+
+            if ($user->id !== $project->assigned_to) {
+                $project->assignedUser?->notify(new ProjectUpdated($project, $user->name));
+            }
 
             return back()->with('success', 'Project updated successfully!');
         } catch (\Exception $e) {
@@ -138,8 +146,14 @@ class ProjectController extends Controller
     public function softDelete(Project $project)
     {
         $this->authorize('softDelete', $project);
+        $user = Auth::user();
         try {
+            DB::beginTransaction();
             $project->delete(); // Soft delete
+            DB::commit();
+            if ($user->id !== $project->assigned_to) {
+                $project->assignedUser?->notify(new ProjectSoftDeleted($project, $user->name));
+            }
             return redirect()->route('projects.index')->with('success', 'Project moved to recycle successfully.');
         } catch (\Exception $e) {
             return redirect()->route('projects.index')->with('error', 'Failed to move project to recycle.');
@@ -152,9 +166,13 @@ class ProjectController extends Controller
     public function restore(Project $project)
     {
         $this->authorize('restore', $project);
+        $user = Auth::user();
         try {
             if ($project->trashed()) {
                 $project->restore();
+                if ($user->id !== $project->assigned_to) {
+                    $project->assignedUser?->notify(new ProjectRestored($project, $user->name));
+                }
                 return redirect()->route('projects.index')->with('success', 'Project restored successfully.');
             }
             return back()->with('error', 'Project is not deleted.');
