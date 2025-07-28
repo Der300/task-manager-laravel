@@ -32,12 +32,18 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Task::class);
         $user = Auth::user();
         $statuses = Status::orderBy('order', 'asc')->pluck('name', 'id');
         $filters = $request->only(['search_task', 'search_user', 'status', 'time']);
 
         if ($user->hasRole('client')) {
+            // Kiểm tra client có task không
+            $hasTasks = Task::whereHas('project', fn($q) => $q->where('client_id', $user->id))->exists();
+
+            if (!$hasTasks) {
+                abort(403, 'You do not have any tasks to view.');
+            }
+
             $data = $this->taskService->getDataTaskTable(clientId: $user->id, filters: $filters);
         } else {
             $data = $this->taskService->getDataTaskTable(filters: $filters);

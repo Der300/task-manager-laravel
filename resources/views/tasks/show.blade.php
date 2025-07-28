@@ -75,7 +75,7 @@
 
                                 {{-- Nút Save + Cancel --}}
                                 <div class="mt-1">
-                                    <button class="btn btn-sm btn-success d-none save-comment-btn"
+                                    <button type="button" class="btn btn-sm btn-success d-none save-comment-btn"
                                         data-id="{{ $item->id }}"
                                         data-url="{{ route('comments.update', ['comment' => $item->id]) }}">
                                         <i class="fa fa-save"></i></button>
@@ -94,7 +94,8 @@
                                         <li><button class="dropdown-item edit-comment-btn"
                                                 data-id="{{ $item->id }}">Edit</button></li>
                                         <li>
-                                            <form action="" method="POST" onsubmit="return confirm('Are you sure?')">
+                                            <form action="{{route('comments.soft-delete',['comment'=>$item->id])}}" method="POST"
+                                                onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?',confirmButtonText: 'yes'})">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="dropdown-item text-danger">Delete</button>
@@ -160,21 +161,18 @@
                         console.error(`Textarea with id comment-textarea-${id} not found.`);
                         return;
                     }
+                    console.log(url);
 
                     const newBody = textarea.value.trim();
 
                     $.ajax({
                         url: url,
-                        method: 'POST', 
+                        method: 'PUT',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         },
                         data: {
-                            body: newBody
-                        },
-                        dataType: 'json',
-                        xhrFields: {
-                            withCredentials: true // gửi cookie session, rất quan trọng với auth middleware
+                            body: newBody,
                         },
                         success: function(data) {
                             document.getElementById(`comment-text-${id}`).innerText =
@@ -194,14 +192,11 @@
                                 showConfirmButton: false,
                                 timer: 1500
                             });
-                            console.error(xhr.responseText);
+                            // console.error(xhr.responseText);
                         }
                     });
                 });
             });
-
-
-
 
             document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -211,6 +206,26 @@
                     toggleEditMode(id, false);
                 });
             });
+
+            // highlight comment
+            const urlParams = new URLSearchParams(window.location.search);
+            const commentId = urlParams.get('comment_id');
+
+            if (commentId) {
+                const target = document.getElementById(`comment-text-${commentId}`);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+
+                    // Highlight tạm thời
+                    target.classList.add('highlight-comment');
+                    setTimeout(() => {
+                        target.classList.remove('highlight-comment');
+                    }, 2000);
+                }
+            }
         });
     </script>
 @endpush

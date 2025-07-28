@@ -78,7 +78,8 @@
                         <label for="assigned_to">Assignee</label>
                         <select name="assigned_to" id="assigned_to"
                             class="form-control @error('assigned_to') is-invalid @enderror"
-                            {{ $canUpdate($task) ? '' : 'disabled' }}>
+                            {{ $canUpdate($task) ? '' : 'disabled' }}
+                            >
                             <option value="">-- Select Assignee --</option>
                             @foreach ($assignedUsers as $id => $name)
                                 <option value="{{ $id }}"

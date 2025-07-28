@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'Comments')
+@section('title', 'Comment Recycle')
 @section('content_wrapper')
 
     <div class="card shadow-sm">
@@ -39,15 +39,23 @@
                                 aria-hidden="true"></i>{{ $item->body }}</p>
                     </div>
                 </div>
-
                 <div class="position-absolute d-flex" style="bottom: 0; right:0">
-                    <form action="{{ route('comments.soft-delete', ['comment' => $item->id]) }}" method="POST" class="mx-1"
-                        onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Delete',text: 'Are you sure you want to move to recycle?',confirmButtonText: 'yes'})">
+                    <form action="{{route('comments.force-delete',['comment'=>$item->id])}}" method="POST" class="mx-1"
+                        onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Delete',text: 'Are you sure you want to delete?',confirmButtonText: 'delete'})">
                         @csrf
                         @method('DELETE')
                         <span data-toggle="tooltip" data-placement="top" title="Delete">
                             <button class="btn btn-danger btn-sm px-2 py-1">
                                 <i class="fa fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </span>
+                    </form>
+                    <form action="{{route('comments.restore',['comment'=>$item->id])}}" method="POST" class="mx-1"
+                        onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Restore',text: 'Are you sure you want to restore?',confirmButtonText: 'restore'})">
+                        @csrf
+                        <span data-toggle="tooltip" data-placement="top" title="Restore">
+                            <button class="btn btn-success btn-sm px-2 py-1">
+                                <i class="fa fa-window-restore" aria-hidden="true"></i>
                             </button>
                         </span>
                     </form>

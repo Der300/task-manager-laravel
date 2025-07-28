@@ -166,15 +166,34 @@
                         @endif
                     </ul>
                 </li>
-                @if ($roleAboveManager)
-                    <li class="nav-item">
-                        <a href="{{ route('comments.recycle') }}"
-                            class="nav-link {{ request()->routeIs('comments.recycle') ? 'active' : '' }}">
-                            <i class="fa fa-trash nav-icon" aria-hidden="true"></i>
-                            <p>Comment recycle</p>
-                        </a>
-                    </li>
-                @endif
+                {{--Manage comment  --}}
+                <li class="nav-item {{ request()->routeIs('comments.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('comments.*') ? 'active' : '' }}">
+                        <i class="fa fa-comment nav-icon" aria-hidden="true"></i>
+                        <p>
+                            Manage comments
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('comments.index') }}"
+                                class="nav-link {{ request()->routeIs('comments.index') ? 'active' : '' }}">
+                                <i class="fa fa-list nav-icon ml-3" aria-hidden="true"></i>
+                                <p>Comment List</p>
+                            </a>
+                        </li>
+                        @if ($roleAboveLeader)
+                            <li class="nav-item">
+                                <a href="{{ route('comments.recycle') }}"
+                                    class="nav-link {{ request()->routeIs('comments.recycle') ? 'active' : '' }}">
+                                    <i class="fa fa-trash nav-icon ml-3" aria-hidden="true"></i>
+                                    <p>Comment recycle</p>
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
+                </li>
                 <li class="nav-item">
                     <a href="{{ route('notifications.index') }}"
                         class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">

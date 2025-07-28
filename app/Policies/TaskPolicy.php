@@ -4,23 +4,10 @@ namespace App\Policies;
 
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TaskPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        // nếu client không có project nào thì không vào project list được
-        $hasTasks = Task::whereHas('project', function ($q) use ($user) {
-            $q->where('client_id', $user->id);
-        })->exists();
-
-        return !$user->hasRole('client') || $hasTasks;
-    }
-
+    
     /**
      * Determine whether the user can view the model.
      */

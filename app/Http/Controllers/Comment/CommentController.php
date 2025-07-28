@@ -5,23 +5,55 @@ namespace App\Http\Controllers\Comment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Comment\StoreCommentRequest;
 use App\Http\Requests\Comment\UpdateCommentRequest;
+use App\Http\Requests\Task\UpdateTaskRequest;
 use App\Models\Comment;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskCommented;
+use App\Services\Comment\CommentService;
 use Exception;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
 {
+    use AuthorizesRequests;
+    protected $commentService;
+    public function __construct(CommentService $commentService)
+    {
+        $this->commentService = $commentService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $user = Auth::user();
+
+        if ($user->hasAnyRole(['admin', 'super-admin'])) {
+            $data = $this->commentService->getCommentsWithPanigation();
+        } elseif (Comment::where('user_id', $user->id)->exists()) {
+
+            $data = $this->commentService->getCommentsWithPanigation(['user_id' => $user->id]);
+        } else {
+            abort(403, 'You have no comments to view.');
+        }
+        return view('comments.index', ['data' => $data]);
+    }
+
+    public function recycle()
+    {
+        $user = Auth::user();
+
+        if ($user->hasAnyRole(['admin', 'super-admin'])) {
+            $data = $this->commentService->getDataCommentRecycleTable();
+        } else {
+            $data = $this->commentService->getDataCommentRecycleTable($user->id);
+        }
+
+        return view('comments.recycle', ['data' => $data]);
     }
 
     /**
@@ -47,7 +79,7 @@ class CommentController extends Controller
                 User::find($assigneeTask)?->notify(new TaskCommented($comment, $task->id));
             }
 
-            return redirect()->back()->with('success', 'Comment added!');
+            return back()->with('success', 'Comment added!');
         } catch (Exception $e) {
             DB::rollback();
 
@@ -56,32 +88,13 @@ class CommentController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Comment $comment)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Comment $comment)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateCommentRequest $request, Comment $comment)
     {
-        $request->validate([
-            'body' => 'required|string|max:1000',
-        ]);
-        dd('ok');
-        $comment = Comment::findOrFail($id);
-        $comment->body = $request->input('body');
+        $this->authorize('update', $comment);
+        $data = $request->validated();
+        $comment->body = $data['body'];
         $comment->save();
 
         return response()->json(['success' => true]);
@@ -89,10 +102,48 @@ class CommentController extends Controller
 
 
     /**
-     * Remove the specified resource from storage.
+     * Move to recycle the specified resource from storage.
      */
-    public function destroy(Comment $comment)
+    public function softDelete(Comment $comment)
     {
-        //
+        $this->authorize('softDelete', $comment);
+
+        try {
+            $comment->delete(); // Soft delete
+
+            return back()->with('success', 'Comment moved to recycle successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to move comment to recycle.');
+        }
+    }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(Comment $comment)
+    {
+        $this->authorize('restore', $comment);
+        try {
+            if ($comment->trashed()) {
+                $comment->restore();
+                return redirect()->route('tasks.show', ['task' => $comment->task_id, 'comment_id' => $comment->id])->with('success', 'Comment restored successfully.');
+            }
+            return back()->with('error', 'Comment is not deleted.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to restore comment.');
+        }
+    }
+
+    /**
+     * Delete comment.
+     */
+    public function forceDelete(Comment $comment)
+    {
+        try {
+            $comment->forceDelete();
+            return back()->with('success', 'Comment has been permanently deleted.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'An error occurred while deleting comment.');
+        }
     }
 }

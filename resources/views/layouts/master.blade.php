@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <style>
+        .highlight-comment {
+            background-color: #f7ba04 !important;
+            transition: background-color 0.5s ease;
+        }
+    </style>
 </head>
 
 @php
@@ -113,7 +119,6 @@
                 resultBox.style.display = 'none';
             }
         });
-
     </script>
 
 </body>

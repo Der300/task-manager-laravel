@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\User;
 use App\Services\Project\ProjectService;
 use App\Services\Task\TaskService;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -66,7 +67,25 @@ class CommentService
                 $query->where($field, $value);
             }
         }
-        return $query->get();
+        return $query->orderBy('updated_at', 'asc')->get();
+    }
+
+    public function getCommentsWithPanigation(array $filters = []): LengthAwarePaginator
+    {
+        $query = Comment::query();
+        $perPage = env('ITEM_PER_PAGE', 20);
+        foreach ($filters as $field => $value) {
+            if ($field === 'not_in' && is_array($value)) {
+                foreach ($value as $notInField => $notInValues) {
+                    $query->whereNotIn($notInField, $notInValues);
+                }
+            } elseif (is_array($value) && !empty($value)) {
+                $query->whereIn($field, $value);
+            } elseif (!is_null($value)) {
+                $query->where($field, $value);
+            }
+        }
+        return $query->orderBy('updated_at', 'desc')->paginate($perPage);
     }
 
     /**
@@ -81,10 +100,21 @@ class CommentService
     }
 
     public function getAllCommentWithTaskId(string $taskId): Collection
-    {   
+    {
         return Comment::with('user:id,name,image,position,department,role')
-        ->where('task_id', $taskId)
+            ->where('task_id', $taskId)
             ->orderBy('updated_at', 'desc')
             ->get();
+    }
+
+    public function getDataCommentRecycleTable(?string $userId = null): LengthAwarePaginator
+    {
+        $itemsPerPage = env('ITEM_PER_PAGE', 5);
+        if ($userId) {
+            $query = Comment::onlyTrashed()->where('user_id', $userId);
+        } else {
+            $query = Comment::onlyTrashed();
+        }
+        return $query->orderByDesc('deleted_at')->paginate($itemsPerPage);
     }
 }

@@ -41,7 +41,7 @@ class TaskCommented extends Notification
             'title' => 'You have been had a new comment in your task',
             'comment_id' => $this->comment->id,
             'comment_name' => $this->comment->name,
-            'url' => route('tasks.show', $this->taskId),
+            'url' => route('tasks.show', ['task' => $this->taskId, 'comment_id' => $this->comment->id]),
             'type' => 'comment',
         ];
     }
