@@ -74,7 +74,7 @@ return [
                 'project'   => ['view'],
                 'task'      => ['view'],
                 'comment'   => ['view', 'create', 'edit', 'soft-delete', 'restore'], // 'edit', 'soft-delete', 'restore' own
-                'file'      => ['view', 'upload', 'download', 'soft-delete', 'restore'], //'soft-delete', 'restore' own
+                'file'      => ['view', 'download'], //'soft-delete', 'restore' own
             ],
         ],
     ],
