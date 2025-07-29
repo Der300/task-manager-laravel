@@ -28,4 +28,9 @@ class User extends Authenticatable implements MustVerifyEmail
     { //moi quan he many-to-many project_user table
         return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id')->withTimestamps();
     }
+
+    public function files()
+    {
+        return $this->hasMany(File::class, 'uploaded_by');
+    }
 }

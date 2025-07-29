@@ -12,7 +12,85 @@
             'projects' => $projects,
             'isCreate' => $isCreate,
         ])
+        {{-- Files --}}
+        @php
+            $files = [
+                (object) [
+                    'original_name' => 'report_2025_q2.pdf',
+                    'mime_type' => 'application/pdf',
+                    'uploaded_by' => 'Nguyễn Văn A',
+                    'created_at' => now()->subDays(5),
+                    'updated_at' => now()->subDays(2),
+                ],
+                (object) [
+                    'original_name' => 'design_sketch.png',
+                    'mime_type' => 'image/png',
+                    'uploaded_by' => 'Trần Thị B',
+                    'created_at' => now()->subDays(8),
+                    'updated_at' => now()->subDays(3),
+                ],
+                (object) [
+                    'original_name' => 'task_list.xlsx',
+                    'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'uploaded_by' => 'Lê Văn C',
+                    'created_at' => now()->subDays(10),
+                    'updated_at' => now()->subDays(1),
+                ],
+            ];
+        @endphp
+        <div class="col-md-12 col-sm-12">
+            <div class="card mb-3 card-primary">
+                <div class="card-header" style="cursor: pointer;" data-toggle="collapse" data-target="#fileCollapse"
+                    aria-expanded="true">
+                    <h3 class="card-title">Attachment files</h3>
+                </div>
 
+                <div id="fileCollapse" class="collapse">
+                    <div class="card-body" style="height: 300px; overflow-y:auto">
+                        @if (count($files))
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>File</th>
+                                            <th>Type</th>
+                                            <th>Descrition</th>
+                                            <th>Uploader</th>
+                                            <th>Upload at</th>
+                                            <th>Updated at</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($files as $file)
+                                            <tr>
+                                                <td>{{ $file->original_name }}</td>
+                                                <td>{{ $file->mime_type }}</td>
+                                                <td>{{' $file->description' }}</td>
+                                                <td>{{ $file->uploaded_by }}</td>
+                                                <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
+                                                <td>{{ $file->updated_at->format('d/m/Y H:i') }}</td>
+                                                <td></td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-muted mb-0">Chưa có tệp nào được đính kèm.</p>
+                        @endif
+                    </div>
+
+                    <div class="card-footer text-end">
+                        <button class="btn btn-primary btn-sm">
+                            <i class="bi bi-upload"></i> Tải lên tệp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Comments --}}
         <div class="col-md-12 col-sm-12">
             <div class="card card-success">
                 <div class="card-header">

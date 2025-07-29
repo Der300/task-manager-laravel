@@ -44,6 +44,10 @@ class Task extends Model
         return $this->belongsTo(IssueType::class, 'issue_type_id');
     }
 
+    public function files()
+    {
+        return $this->hasMany(File::class, 'task_id');
+    }
     // observer xóa file
     protected static function booted(): void
     {
