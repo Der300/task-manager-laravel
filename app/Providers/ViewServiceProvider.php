@@ -159,8 +159,20 @@ class ViewServiceProvider extends ServiceProvider
             $exceptClient = !$user->hasRole('client');
 
             $canUpdate = function ($item) use ($user, $roleAboveMember) {
-                if ($roleAboveMember) return true;
-                if ($user->hasRole('member') && $user->id === $item->assigned_to) return true;
+                if ($user->hasAnyRole(['admin', 'super-admin','manager'])) return true;
+                if ($user->hasAnyRole(['member','leader']) && $user->id === $item->assigned_to) return true;
+                return false;
+            };
+
+            $canUploadSoftDelFile = function ($item) use ($user) {
+                if (!$user || !$item) return false;
+
+                if ($user->hasAnyRole(['admin', 'super-admin'])) return true;
+
+                if ($user->hasRole('manager') && $user->id === $item->project?->assigned_to) return true;
+
+                if ($user->hasAnyRole(['leader', 'member']) && $user->id === $item->assigned_to) return true;
+
                 return false;
             };
 
@@ -170,7 +182,28 @@ class ViewServiceProvider extends ServiceProvider
                 'canSoftDel' => $canSoftDel,
                 'exceptClient' => $exceptClient,
                 'canUpdate' => $canUpdate,
+                'canUploadSoftDelFile' => $canUploadSoftDelFile,
             ]);
         });
+
+        // view()->composer('myfiles.*', function ($view) {
+        //     $user = Auth::user();
+
+        //     $canUpload = function ($item) use ($user) {
+        //         if (!$user || !$item) return false;
+
+        //         if ($user->hasAnyRole(['admin', 'super-admin'])) return true;
+
+        //         if ($user->hasRole('manager') && $user->id === $item->task?->project?->assigned_to) return true;
+
+        //         if ($user->hasAnyRole(['leader', 'member']) && $user->id === $item->task?->assigned_to) return true;
+
+        //         return false;
+        //     };
+
+        //     $view->with([
+        //         'canUpload' => $canUpload,
+        //     ]);
+        // });
     }
 }

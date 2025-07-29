@@ -55,6 +55,8 @@
                                 <i class="fas fa-comments mr-2"></i>
                             @elseif($notification->data['type'] === 'project')
                                 <i class="fas fa-project-diagram mr-2"></i>
+                                @elseif($notification->data['type'] === 'file')
+                                <i class="fa fa-file mr-2" aria-hidden="true"></i>
                             @endif
                             <div>
                                 {{ $notification->data['title'] ?? 'Notification' }}

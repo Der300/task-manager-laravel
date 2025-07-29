@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\File\FileService;
 use App\Services\Task\TaskService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -54,14 +55,14 @@ class Task extends Model
         static::deleting(function (Task $task) {
             // Nếu là force delete
             if ($task->isForceDeleting()) {
-                app(TaskService::class)->deleteTaskFilesPermanently($task);
+                app(FileService::class)->deleteTaskFilesPermanently($task->id);
             } else {
-                app(TaskService::class)->moveTaskFilesToTrash($task);
+                app(FileService::class)->moveTaskFilesToTrash($task->id);
             }
         });
 
         static::restoring(function (Task $task) {
-            app(TaskService::class)->restoreTaskFilesFromTrash($task);
+            app(FileService::class)->restoreTaskFilesFromTrash($task->id);
         });
     }
 }

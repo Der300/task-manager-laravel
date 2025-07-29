@@ -14,8 +14,8 @@
                 data-target="#sidebar-user-dropdown" aria-expanded="false" aria-controls="sidebar-user-dropdown"
                 style="cursor: pointer;" id="sidebar-user-toggle">
                 <div class="image">
-                    <img src="{{ asset('images/users/'.auth()->user()->image) }}"
-                        class="img-circle elevation-2" alt="{{ auth()->user()->name }}">
+                    <img src="{{ asset('images/users/' . auth()->user()->image) }}" class="img-circle elevation-2"
+                        alt="{{ auth()->user()->name }}">
 
                 </div>
                 <div class="info d-flex flex-column align-items-start justify-content-center overflow-hidden">
@@ -166,7 +166,8 @@
                         @endif
                     </ul>
                 </li>
-                {{--Manage comment  --}}
+
+                {{-- Manage comment  --}}
                 <li class="nav-item {{ request()->routeIs('comments.*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('comments.*') ? 'active' : '' }}">
                         <i class="fa fa-comment nav-icon" aria-hidden="true"></i>
@@ -183,17 +184,46 @@
                                 <p>Comment List</p>
                             </a>
                         </li>
-                        @if ($roleAboveLeader)
+                        <li class="nav-item">
+                            <a href="{{ route('comments.recycle') }}"
+                                class="nav-link {{ request()->routeIs('comments.recycle') ? 'active' : '' }}">
+                                <i class="fa fa-trash nav-icon ml-3" aria-hidden="true"></i>
+                                <p>Comment recycle</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {{-- Manage files  --}}
+                <li class="nav-item {{ request()->routeIs('myfiles.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('myfiles.*') ? 'active' : '' }}">
+                        <i class="nav-icon fa fa-file" aria-hidden="true"></i>
+                        <p>
+                            Manage files
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('myfiles.index') }}"
+                                class="nav-link {{ request()->routeIs('myfiles.index') ? 'active' : '' }}">
+                                <i class="fa fa-list nav-icon ml-3" aria-hidden="true"></i>
+                                <p>Files List</p>
+                            </a>
+                        </li>
+                        @if ($roleNotClient)
                             <li class="nav-item">
-                                <a href="{{ route('comments.recycle') }}"
-                                    class="nav-link {{ request()->routeIs('comments.recycle') ? 'active' : '' }}">
+                                <a href="{{ route('myfiles.recycle') }}"
+                                    class="nav-link {{ request()->routeIs('myfiles.recycle') ? 'active' : '' }}">
                                     <i class="fa fa-trash nav-icon ml-3" aria-hidden="true"></i>
-                                    <p>Comment recycle</p>
+                                    <p>Files recycle</p>
                                 </a>
                             </li>
                         @endif
                     </ul>
                 </li>
+
+                {{-- Manage notifications  --}}
                 <li class="nav-item">
                     <a href="{{ route('notifications.index') }}"
                         class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">

@@ -9,7 +9,7 @@ Route::middleware(['auth', 'verified'])
     ->group(function () {
         Route::get('/', 'index')->name('index');
 
-        Route::delete('{comment}/force-delete', 'forceDelete')->middleware('role:admin|super-admin')->withTrashed()->name('force-delete');
+        Route::delete('{comment}/force-delete', 'forceDelete')->middleware('role:admin|super-admin', 'password.confirm')->withTrashed()->name('force-delete');
 
         Route::get('recycle', 'recycle')->name('recycle');
         Route::post('{comment}/restore', 'restore')->withTrashed()->name('restore');

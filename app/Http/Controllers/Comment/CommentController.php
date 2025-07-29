@@ -36,14 +36,11 @@ class CommentController extends Controller
     public function index()
     {
         $user = Auth::user();
-
+        $data = null;
         if ($user->hasAnyRole(['admin', 'super-admin'])) {
             $data = $this->commentService->getCommentsWithPanigation();
         } elseif (Comment::where('user_id', $user->id)->exists()) {
-
             $data = $this->commentService->getCommentsWithPanigation(['user_id' => $user->id]);
-        } else {
-            abort(403, 'You have no comments to view.');
         }
         return view('comments.index', ['data' => $data]);
     }

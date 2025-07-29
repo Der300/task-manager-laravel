@@ -3,7 +3,7 @@
 @section('content_wrapper')
 
     <div class="card shadow-sm">
-        @forelse ($data as $item)
+        @forelse ($data??[] as $item)
             <div class="card shadow-sm mb-2 position-relative">
                 <div class="card-body d-flex align-items-start">
                     <div>
@@ -16,7 +16,7 @@
                             <div>
                                 <h6 class="mb-0">{{ $item->user?->name }}</h6>
                                 <small class="text-muted mt-0 d-block">
-                                    @if ($item->user?->role !== 'client')
+                                    @if ($item->user?->role === 'client')
                                         --Client--
                                     @else
                                         {{ $item->user?->position ?? '' }} -
@@ -41,7 +41,8 @@
                 </div>
 
                 <div class="position-absolute d-flex" style="bottom: 0; right:0">
-                    <form action="{{ route('comments.soft-delete', ['comment' => $item->id]) }}" method="POST" class="mx-1"
+                    <form action="{{ route('comments.soft-delete', ['comment' => $item->id]) }}" method="POST"
+                        class="mx-1"
                         onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Delete',text: 'Are you sure you want to move to recycle?',confirmButtonText: 'yes'})">
                         @csrf
                         @method('DELETE')
@@ -60,7 +61,7 @@
         @endforelse
 
         <div class="card-footer mb-0 pb-0">
-            {{ $data->links() }}
+            {{ $data?->links() }}
         </div>
     </div>
 @endsection

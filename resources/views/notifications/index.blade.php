@@ -9,6 +9,15 @@
                     <div class="card-body pb-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
+                                @if ($notification->data['type'] === 'task')
+                                    <i class="fas fa-tasks mr-2 text-secondary"></i>
+                                @elseif($notification->data['type'] === 'comment')
+                                    <i class="fas fa-comments mr-2 text-secondary"></i>
+                                @elseif($notification->data['type'] === 'project')
+                                    <i class="fas fa-project-diagram mr-2 text-secondary"></i>
+                                @elseif($notification->data['type'] === 'file')
+                                    <i class="fa fa-file mr-2 text-secondary" aria-hidden="true"></i>
+                                @endif
                                 {{ $notification->data['title'] ?? 'Notification' }}
                             </h5>
                             @if ($isUser)
@@ -19,13 +28,13 @@
                                 @endif
                             @endif
                         </div>
-                        <div>
+                        <div style="margin-left: 32px">
                             <small><i class="fa fa-home text-warning mr-2"
                                     aria-hidden="true"></i>{{ $notification->data['created_by'] ?? '' }}</small>
                             <small><i class="fa fa-forward text-primary mx-2"
                                     aria-hidden="true"></i>{{ $isUser ? 'You' : $notification->data['assigned_to'] }}</small>
                         </div>
-                        <div class="my-2 w-100 rounded shadow ml-3">
+                        <div class="my-2 w-100 rounded shadow" style="margin-left: 32px">
                             <span>{{ $notification->data['object_name'] ?? '' }}</span>
                         </div>
                     </div>

@@ -28,7 +28,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        if ($user->hasRole('member')) {
+        if ($user->hasAnyRole(['member','leader'])) {
             // member chỉ được edit task của chính mình
             return $user->id === $task->assigned_to;
         }

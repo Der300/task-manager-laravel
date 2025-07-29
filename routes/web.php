@@ -11,3 +11,4 @@ require __DIR__ . '/web/projects.php';
 require __DIR__ . '/web/tasks.php';
 require __DIR__ . '/web/users.php';
 require __DIR__ . '/web/notifications.php';
+require __DIR__ . '/web/files.php';

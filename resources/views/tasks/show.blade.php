@@ -14,78 +14,106 @@
         ])
         {{-- Files --}}
         @php
-            $files = [
-                (object) [
-                    'original_name' => 'report_2025_q2.pdf',
-                    'mime_type' => 'application/pdf',
-                    'uploaded_by' => 'Nguyễn Văn A',
-                    'created_at' => now()->subDays(5),
-                    'updated_at' => now()->subDays(2),
-                ],
-                (object) [
-                    'original_name' => 'design_sketch.png',
-                    'mime_type' => 'image/png',
-                    'uploaded_by' => 'Trần Thị B',
-                    'created_at' => now()->subDays(8),
-                    'updated_at' => now()->subDays(3),
-                ],
-                (object) [
-                    'original_name' => 'task_list.xlsx',
-                    'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'uploaded_by' => 'Lê Văn C',
-                    'created_at' => now()->subDays(10),
-                    'updated_at' => now()->subDays(1),
-                ],
-            ];
+            $fileService = app(App\Services\File\FileService::class);
         @endphp
+
         <div class="col-md-12 col-sm-12">
             <div class="card mb-3 card-primary">
                 <div class="card-header" style="cursor: pointer;" data-toggle="collapse" data-target="#fileCollapse"
                     aria-expanded="true">
                     <h3 class="card-title">Attachment files</h3>
                 </div>
-
                 <div id="fileCollapse" class="collapse">
                     <div class="card-body" style="height: 300px; overflow-y:auto">
-                        @if (count($files))
-                            <div class="table-responsive">
-                                <table class="table table-bordered mb-0">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>File</th>
-                                            <th>Type</th>
-                                            <th>Descrition</th>
-                                            <th>Uploader</th>
-                                            <th>Upload at</th>
-                                            <th>Updated at</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($files as $file)
-                                            <tr>
-                                                <td>{{ $file->original_name }}</td>
-                                                <td>{{ $file->mime_type }}</td>
-                                                <td>{{' $file->description' }}</td>
-                                                <td>{{ $file->uploaded_by }}</td>
-                                                <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
-                                                <td>{{ $file->updated_at->format('d/m/Y H:i') }}</td>
-                                                <td></td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                        @if ($canUploadSoftDelFile($task))
+                            <div class="card card-outline card-warning">
+                                <div class="card-header">
+                                    <button class="btn btn-warning btn-sm" type="button" data-toggle="collapse"
+                                        data-target="#uploadFile" aria-expanded="false" aria-controls="uploadFile">
+                                        <i class="fa fa-upload mr-1" aria-hidden="true"></i> Upload file
+                                    </button>
+                                </div>
+                                <div class="card-body collapse" id="uploadFile">
+                                    <form id="uploadFileForm" method="POST" enctype="multipart/form-data">
+                                        @csrf
+                                        <input type="file" name="file" id="fileInput" required
+                                            accept="image/*, video/*, audio/*, application/pdf, .doc,.docx, .xls, .xlsx, .ppt, .pptx, .txt, .zip, .rar, .7z, .tar">
+                                        <input type="text" name="description" id="fileDesc"
+                                            placeholder="Reason upload file">
+                                        <button type="submit" class="btn-sm btn-primary" id="uploadFileBtn"
+                                            data-url={{ route('myfiles.upload', ['task' => $task->id]) }}><i
+                                                class="fa fa-upload" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn-sm btn-danger" data-toggle="collapse"
+                                            data-target="#uploadFile" id="cancelUpload"><i class="fa fa-times"></i></button>
+                                    </form>
+                                    <div id="uploadProgressContainer" class="progress progress-sm my-2 d-none">
+                                        <div id="uploadProgressBar" class="progress-bar bg-success" role="progressbar"
+                                            style="width: 0%">0%
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        @else
-                            <p class="text-muted mb-0">Chưa có tệp nào được đính kèm.</p>
                         @endif
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0" id="file-table">
+                                <thead class="table-dark text-center">
+                                    <tr>
+                                        <th class="align-middle">File</th>
+                                        <th class="align-middle">Type</th>
+                                        <th class="align-middle">Descrition</th>
+                                        <th class="align-middle">Uploader</th>
+                                        <th class="align-middle">Upload at</th>
+                                        <th class="align-middle">Updated at</th>
+                                        <th class="align-middle">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    @forelse ($files as $item)
+                                        <tr>
+                                            <td class="align-middle">{{ $item->original_name }}</td>
+                                            <td class="align-middle">
+                                                {{ $fileService->getFileTypeLabel($item->mime_type) }}</td>
+                                            <td class="align-middle">{{ $item->description }}</td>
+                                            <td class="align-middle">{{ $item->uploader?->name }}</td>
+                                            <td class="align-middle">{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                                            <td class="align-middle">{{ $item->updated_at->format('d/m/Y H:i') }}</td>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center justify-content-center">
+                                                    @if ($canUploadSoftDelFile($task))
+                                                        <form
+                                                            action="{{ route('myfiles.soft-delete', ['file' => $item->id]) }}"
+                                                            method="POST" class="mx-1"
+                                                            onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?'})">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <span data-toggle="tooltip" data-placement="top"
+                                                                title="Move to Recycle">
+                                                                <button class="btn btn-danger btn-sm px-2 py-1">
+                                                                    <i class="fa fa-recycle" aria-hidden="true"></i>
+                                                                </button>
+                                                            </span>
+                                                        </form>
+                                                    @endif
+                                                    <a href="{{ route('myfiles.download', ['file' => $item->id]) }}"
+                                                        class="btn btn-warning btn-sm px-2 py-1 mx-1" data-toggle="tooltip"
+                                                        data-placement="top" title="Dowload files">
+                                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr class="tr_empty">
+                                            <td colspan="7" class="text-center text-muted">No files attached yet.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
 
-                    <div class="card-footer text-end">
-                        <button class="btn btn-primary btn-sm">
-                            <i class="bi bi-upload"></i> Tải lên tệp
-                        </button>
-                    </div>
+                    <div class="card-footer"></div>
                 </div>
             </div>
         </div>
@@ -97,7 +125,7 @@
                     <h3 class="card-title">Comment of Task</h3>
                     <button class="btn btn-warning btn-sm float-right" type="button" data-toggle="collapse"
                         data-target="#newCommentForm" aria-expanded="false" aria-controls="newCommentForm">
-                        <i class="fa fa-plus me-1"></i> New Comment
+                        <i class="fa fa-plus mr-1"></i> New Comment
                     </button>
                 </div>
                 <div class="card-body py-2">
@@ -133,8 +161,8 @@
 
                                 </span>
                                 </span>
-                                <span class="direct-chat-timestamp float-right" data-toggle="tooltip" data-placement="top"
-                                    title="{{ $item->created_at?->format('d/m/Y H:i:s') ?? '--' }}">
+                                <span class="direct-chat-timestamp float-right" data-toggle="tooltip"
+                                    data-placement="top" title="{{ $item->created_at?->format('d/m/Y H:i:s') ?? '--' }}">
                                     {{ $item->updated_at?->diffForHumans() ?? '--' }}
                                 </span>
                             </div>
@@ -158,7 +186,7 @@
                                         data-id="{{ $item->id }}"
                                         data-url="{{ route('comments.update', ['comment' => $item->id]) }}">
                                         <i class="fa fa-save"></i></button>
-                                    <button class="btn btn-sm btn-secondary d-none cancel-edit-btn"
+                                    <button type="button" class="btn btn-sm btn-secondary d-none cancel-edit-btn"
                                         data-id="{{ $item->id }}"><i class="fa fa-times"></i></button>
                                 </div>
 
@@ -306,6 +334,159 @@
                     }, 2000);
                 }
             }
+
+
+            // upload file
+            // Thông báo lỗi
+            const maxFileSize = 50 * 1024 * 1024; // 50MB
+
+            // Check file size
+            $('#fileInput').on('change', function() {
+                const file = this.files[0];
+                if (file && file.size > maxFileSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File is too large!',
+                        text: 'Please select a file smaller than 50MB.',
+                        showConfirmButton: true,
+                    });
+                    $(this).val('');
+                }
+            });
+
+            //fn chuyển mine_type
+            function getFileTypeLabel(mime) {
+                if (mime.startsWith('image/')) return 'Image';
+                if (mime.startsWith('video/')) return 'Video';
+                if (mime.startsWith('audio/')) return 'Audio';
+                if (mime === 'application/pdf') return 'PDF';
+                if (mime.includes('word') || mime.includes('officedocument.wordprocessingml')) return 'Word';
+                if (mime.includes('excel') || mime.includes('spreadsheetml')) return 'Excel';
+                if (mime.includes('powerpoint') || mime.includes('presentationml')) return 'PowerPoint';
+                if (mime === 'text/plain') return 'Text File';
+                if (mime.includes('zip') || mime.includes('rar') || mime.includes('7z')) return 'Archive';
+                return 'Other';
+            }
+
+            // upload file
+            $('#uploadFileBtn').on('click', function() {
+                const file = document.getElementById('fileInput').files[0];
+                if (!file) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Please choose a file!'
+                    });
+                    return;
+                }
+                const url = this.dataset.url;
+                const form = document.getElementById('uploadFileForm');
+                const formData = new FormData(form);
+
+                // upload file
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    xhr: function() {
+                        let xhr = new XMLHttpRequest();
+
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if (e.lengthComputable) {
+                                let percent = Math.round((e.loaded / e.total) * 100);
+                                $('#uploadProgressContainer').removeClass('d-none');
+                                $('#uploadProgressBar').css('width', percent + '%')
+                                    .text(percent + '%');
+                            }
+                        });
+
+                        return xhr;
+                    },
+                    beforeSend: function() {
+                        $('#uploadFileBtn').prop('disabled', true);
+                        $('#uploadProgressContainer').removeClass('d-none');
+                        $('#uploadProgressBar').css('width', '0%').text('0%');
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'File has been upload successfully!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        const file = response.file;
+
+                        const typeLabel = getFileTypeLabel(file.mime_type);
+
+                        const newRow = `
+                                        <tr>
+                                            <td class="align-middle">${file.original_name}</td>
+                                            <td class="align-middle">${typeLabel}</td>
+                                            <td class="align-middle">${file.description ?? ''}</td>
+                                            <td class="align-middle">${file.uploader_name ?? '-'}</td>
+                                            <td class="align-middle">${file.created_at}</td>
+                                            <td class="align-middle">${file.updated_at}</td>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center justify-content-center">
+                                                    <form action="/myfiles/${file.id}" method="POST" class="mx-1"
+                                                        onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?'})">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="btn btn-danger btn-sm px-2 py-1">
+                                                            <i class="fa fa-recycle" aria-hidden="true"></i>
+                                                        </button>
+                                                    </form>
+                                                    <a href="/myfiles/${file.id}/download" class="btn btn-warning btn-sm px-2 py-1 mx-1"
+                                                        data-toggle="tooltip" data-placement="top"
+                                                        title="Download file">
+                                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+
+                        $('#file-table tbody').prepend(newRow); // chèn lên đầu bảng
+
+                        $('#file-table tbody .tr_empty').remove();
+                        $('#uploadFileForm')[0].reset();
+                        $('#uploadFile').collapse('hide');
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 413) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'File too large!',
+                                text: 'Server rejected the file. Try smaller size.',
+                                showConfirmButton: true
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Failed to upload file!',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        }
+                    },
+                    complete: function() {
+                        $('#uploadFileBtn').prop('disabled', false);
+                        setTimeout(() => {
+                            $('#uploadProgressContainer').addClass('d-none');
+                            $('#uploadProgressBar').css('width', '0%').text('0%');
+                        }, 1500);
+                    }
+                });
+            });
+
+            $('#cancelUpload').on('click', function() {
+                $('#uploadFileForm')[0].reset();
+                $('#uploadFile').collapse('hide');
+            });
         });
     </script>
 @endpush

@@ -12,6 +12,7 @@ use App\Notifications\TaskAssigned;
 use App\Notifications\TaskSoftDeleted;
 use App\Notifications\TaskUpdated;
 use App\Services\Comment\CommentService;
+use App\Services\File\FileService;
 use App\Services\Task\TaskService;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -24,10 +25,12 @@ class TaskController extends Controller
     use AuthorizesRequests;
     protected $taskService;
     protected $commentService;
-    public function __construct(TaskService $taskService, CommentService $commentService)
+    protected $fileService;
+    public function __construct(TaskService $taskService, CommentService $commentService, FileService $fileService)
     {
         $this->taskService = $taskService;
         $this->commentService = $commentService;
+        $this->fileService = $fileService;
     }
     /**
      * Display a listing of the resource.
@@ -96,6 +99,7 @@ class TaskController extends Controller
         $this->authorize('view', $task);
         $data = $this->taskService->getTaskToShowOrEdit(task: $task, isCreate: false);
         $data['comments'] = $this->commentService->getAllCommentWithTaskId($task->id);
+        $data['files'] = $this->fileService->getFilesByTaskId($task->id);
         return view('tasks.show', $data);
     }
 
@@ -132,6 +136,7 @@ class TaskController extends Controller
             if ($user->id !== $task->assigned_to) {
                 $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
             }
+            $this->fileService->moveTaskFilesToTrash($task->id);
             return redirect()->route('tasks.index')->with('success', 'Task moved to recycle successfully.');
         } catch (\Exception $e) {
 
@@ -167,6 +172,7 @@ class TaskController extends Controller
                 if ($user->id !== $task->assigned_to) {
                     $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
                 }
+                $this->fileService->restoreTaskFilesFromTrash($task->id);
                 return redirect()->route('tasks.index')->with('success', 'Task restored successfully.');
             }
             return back()->with('error', 'Task is not deleted.');
@@ -186,6 +192,7 @@ class TaskController extends Controller
             if ($user->id !== $task->assigned_to) {
                 $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
             }
+            $this->fileService->deleteTaskFilesPermanently($task->id);
             return back()->with('success', $result['message']);
         }
         return back()->with('error', $result['message']);
