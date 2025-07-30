@@ -14,17 +14,19 @@ use App\Notifications\FileUploaded;
 use App\Services\File\FileService;
 use Auth;
 use Exception;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class FileController extends Controller
 {
+    use AuthorizesRequests;
     public function __construct(protected FileService $fileService)
     {
         $this->fileService = $fileService;
     }
     /**
-     * Display a listing of the resource.
+     * File list.
      */
     public function index()
     {
@@ -33,6 +35,9 @@ class FileController extends Controller
         return view('myfiles.index', ['files' => $files]);
     }
 
+    /**
+     * Recycle file list
+     */
     public function recycle()
     {
         $files = $this->fileService->getAllVisibleFilesForUserToRecycle(Auth::user());
@@ -40,8 +45,12 @@ class FileController extends Controller
         return view('myfiles.recycle', ['files' => $files]);
     }
 
+    /**
+     * Soft delete file
+     */
     public function softDelete(File $file)
     {
+        $this->authorize('softDelete', $file);
         $user = Auth::user();
         try {
             DB::beginTransaction();
@@ -58,6 +67,9 @@ class FileController extends Controller
         }
     }
 
+    /**
+     * Restore file
+     */
     public function restore(File $file)
     {
         $user = Auth::user();
@@ -76,6 +88,9 @@ class FileController extends Controller
         }
     }
 
+    /**
+     * Xóa vĩnh viễn file
+     */
     public function forceDelete(File $file)
     {
         $user = Auth::user();
@@ -94,6 +109,9 @@ class FileController extends Controller
         }
     }
 
+    /**
+     * Up file
+     */
     public function upload(UploadRequest $request, Task $task)
     {
         $user = Auth::user();
@@ -123,6 +141,9 @@ class FileController extends Controller
         }
     }
 
+    /**
+     * Down file
+     */
     public function download(File $file)
     {
         $user = Auth::user();

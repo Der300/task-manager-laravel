@@ -15,19 +15,19 @@ class FilePolicy
         //
     }
 
-    public function delete(User $user, File $file)
+    public function softDelete(User $user, File $file)
     {
         if ($user->hasAnyRole(['leader', 'member'])) {
-            return $file->task_id === $file->task?->assigned_to;
+            return $file->task?->assigned_to === $user->id;
         }
         if ($user->hasRole('client')) {
-            return $file->task_id === $file->task?->project?->client_id;
+            return false;
         }
 
         return true;
     }
 
-     public function forceDelete(User $user, File $file)
+    public function forceDelete(User $user, File $file)
     {
         if ($user->hasAnyRole(['admin', 'super-admin'])) {
             return true;

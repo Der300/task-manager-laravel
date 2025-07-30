@@ -21,7 +21,7 @@
                         </thead>
                         <tbody class="text-center">
                             @foreach ($files as $item)
-                                <tr id="file-{{$item->id}}">
+                                <tr id="file-{{ $item->id }}">
                                     <td class="align-middle">{{ $item->original_name }}</td>
                                     <td class="align-middle">
                                         {{ app(App\Services\File\FileService::class)->getFileTypeLabel($item->mime_type) }}
@@ -37,7 +37,6 @@
                                     <td class="align-middle">
                                         <div class="d-flex align-items-center justify-content-center">
                                             @can('forceDelete', $item)
-                                                {{-- gọi fn từ policy view, create, update, delete, restore, forceDelete, viewAny --}}
                                                 <form action="{{ route('myfiles.force-delete', ['file' => $item->id]) }}"
                                                     method="POST" class="mx-1"
                                                     onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?'})">
@@ -49,7 +48,7 @@
                                                         </button>
                                                     </span>
                                                 </form>
-                                            @endcannot
+                                            @endcan
                                             <form action="{{ route('myfiles.restore', ['file' => $item->id]) }}"
                                                 method="POST" class="mx-1"
                                                 onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Restore',text: 'Are you sure you want to restore?',confirmButtonText: 'restore'})">

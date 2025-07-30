@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\File;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Policies\FilePolicy;
 use App\Policies\ProjectPolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\UserPolicy;
@@ -17,6 +19,7 @@ class AuthServiceProvider extends ServiceProvider
         User::class => UserPolicy::class,
         Task::class => TaskPolicy::class,
         Project::class => ProjectPolicy::class,
+        File::class => FilePolicy::class,
     ];
     /**
      * Register services.

@@ -36,7 +36,7 @@
                                     <td class="align-middle">{{ $item->updated_at->format('d/m/Y H:i') }}</td>
                                     <td class="align-middle">
                                         <div class="d-flex align-items-center justify-content-center">
-                                            @can('delete', $item)
+                                            @can('softDelete', $item)
                                                 {{-- gọi fn từ policy --}}
                                                 <form action="{{ route('myfiles.soft-delete', ['file' => $item->id]) }}"
                                                     method="POST" class="mx-1"

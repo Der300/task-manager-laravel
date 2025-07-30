@@ -14,6 +14,9 @@ class FileService
     protected string $folder = 'files/';
     protected string $trashFolder = 'files/trash/';
 
+    /**
+     * Lấy tên loại file
+     */
     function getFileTypeLabel(string $mime): string
     {
         return match (true) {
@@ -33,47 +36,41 @@ class FileService
         };
     }
 
-    /**
-     * Move file to Trash
-     * 
-     * @param File $file
-     */
-    public function moveFileToTrash(File $file): void
-    {
-        $from = public_path($this->folder . $file->stored_name);
-        $to = public_path($this->trashFolder . $file->stored_name);
 
-        $trashDir = dirname($to);
-        if (!is_dir($trashDir)) {
-            mkdir($trashDir, 0755, true);
+    private function moveFile(File $file, string $fromDir, string $toDir): void
+    {
+        $from = public_path($fromDir . $file->stored_name);
+        $to = public_path($toDir . $file->stored_name);
+
+        if (!is_dir(dirname($to))) {
+            mkdir(dirname($to), 0755, true);
         }
 
         if (file_exists($from)) {
             rename($from, $to);
-            $file->update(['path' => $this->trashFolder . $file->stored_name]);
         }
+    }
+
+    /**
+     * Move file to Trash
+     */
+    public function moveFileToTrash(File $file): void
+    {
+        $this->moveFile($file, $this->folder, $this->trashFolder);
+        $file->update(['path' => $this->trashFolder . $file->stored_name]);
     }
 
     /**
      * Restore file
-     * 
-     * @param File $file
      */
     public function restoreFileFromTrash(File $file): void
     {
-        $from = public_path($this->trashFolder . $file->stored_name);
-        $to = public_path($this->folder . $file->stored_name);
-
-        if (file_exists($from)) {
-            rename($from, $to);
-            $file->update(['path' => $this->folder . $file->stored_name]);
-        }
+        $this->moveFile($file, $this->trashFolder, $this->folder);
+        $file->update(['path' => $this->folder . $file->stored_name]);
     }
 
     /**
      * Delete file
-     * 
-     * @param File $file
      */
     public function deleteFilePermanently(File $file): void
     {
@@ -86,47 +83,32 @@ class FileService
     }
 
     /**
-     * Di chuyển files liên quan task vào trash
-     * 
-     * @param string $taskId
+     * Move files of Task
      */
     public function moveTaskFilesToTrash(string $taskId): void
     {
-        $files = File::where('task_id', $taskId)->get();
-
-        foreach ($files as $file) {
-            $this->moveFileToTrash($file);
-        }
+        File::where('task_id', $taskId)->get()->each(fn($file) => $this->moveFileToTrash($file));
     }
 
     /**
-     * Restore files liên quan task
-     * 
-     * @param Task $task tên task
+     * Restore files of Task
      */
     public function restoreTaskFilesFromTrash(string $taskId): void
     {
-        $files = File::where('task_id', $taskId)->get();
-
-        foreach ($files as $file) {
-            $this->restoreFileFromTrash($file);
-        }
+        File::where('task_id', $taskId)->get()->each(fn($file) => $this->restoreFileFromTrash($file));
     }
 
     /**
-     * Delete files liên quan task
-     * 
-     * @param string $taskId tên task
+     * Restore files of Task
      */
     public function deleteTaskFilesPermanently(string $taskId): void
     {
-        $files = File::where('task_id', $taskId)->get();
-
-        foreach ($files as $file) {
-            $this->deleteFilePermanently($file);
-        }
+        File::where('task_id', $taskId)->get()->each(fn($file) => $this->deleteFilePermanently($file));
     }
 
+    /**
+     * up file
+     */
     public function uploadFile(string $taskId, UploadedFile $file, ?string $description = null, ?string $uploaderId = null): File
     {
         $storedName = uniqid() . '_' . $file->getClientOriginalName();
@@ -149,6 +131,9 @@ class FileService
         ]);
     }
 
+    /**
+     * down file
+     */
     public function downloadFile(File $file): BinaryFileResponse
     {
         $path = public_path($file->path);
@@ -159,46 +144,51 @@ class FileService
         return response()->download($path, $file->original_name);
     }
 
+    /**
+     * Lấy toàn bộ file của task
+     */
     public function getFilesByTaskId(int $taskId)
     {
-        return File::with('uploader:id,name', 'task:id')
+        return File::with('uploader:id,name', 'task')
             ->where('task_id', $taskId)
             ->orderBy('created_at', 'desc')
             ->get();
     }
 
-    private function baseVisibleFilesForUser(User $user)
+    private function baseVisibleFilesForUser(User $user, string $role)
     {
         $query = File::with(['task.project']);
-
-        if ($user->hasRole('client')) {
-            $query->whereHas('task.project', function ($q) use ($user) {
+        match ($role) {
+            'client' => $query->whereHas('task.project', function ($q) use ($user) {
                 $q->where('client_id', $user->id);
-            });
-        } elseif ($user->hasRole('member')) {
-            $query->whereHas('task', function ($q) use ($user) {
+            }),
+            'member' => $query->whereHas('task', function ($q) use ($user) {
                 $q->where('assigned_to', $user->id);
-            });
-        } elseif ($user->hasRole('leader')) {
-            $query->whereHas('task.project.tasks', function ($q) use ($user) {
+            }),
+            'leader' => $query->whereHas('task.project.tasks', function ($q) use ($user) {
                 $q->where('assigned_to', $user->id);
-            });
-        } elseif ($user->hasRole('manager')) {
-            $query->whereHas('task.project', function ($q) use ($user) {
+            }),
+            'manager' => $query->whereHas('task.project', function ($q) use ($user) {
                 $q->where('assigned_to', $user->id);
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc');
+            }),
+            default => null,
+        };
+        return $query->latest('created_at');
     }
 
+    /**
+     * Lấy toàn bộ file của user
+     */
     public function getAllVisibleFilesForUser(User $user): LengthAwarePaginator
     {
-        return $this->baseVisibleFilesForUser($user)->paginate(env('ITEM_PER_PAGE', 10));
+        return $this->baseVisibleFilesForUser($user, $user->role)->paginate(env('ITEM_PER_PAGE', 10));
     }
 
+    /**
+     * Lấy toàn bộ file đã bị soft-delete của user
+     */
     public function getAllVisibleFilesForUserToRecycle(User $user): LengthAwarePaginator
     {
-        return $this->baseVisibleFilesForUser($user)->onlyTrashed()->paginate(env('ITEM_PER_PAGE', 10));
+        return $this->baseVisibleFilesForUser($user, $user->role)->onlyTrashed()->paginate(env('ITEM_PER_PAGE', 10));
     }
 }

@@ -12,11 +12,8 @@
             'projects' => $projects,
             'isCreate' => $isCreate,
         ])
-        {{-- Files --}}
-        @php
-            $fileService = app(App\Services\File\FileService::class);
-        @endphp
 
+        {{-- Files --}}
         <div class="col-md-12 col-sm-12">
             <div class="card mb-3 card-primary">
                 <div class="card-header" style="cursor: pointer;" data-toggle="collapse" data-target="#fileCollapse"
@@ -72,16 +69,16 @@
                                         <tr>
                                             <td class="align-middle">{{ $item->original_name }}</td>
                                             <td class="align-middle">
-                                                {{ $fileService->getFileTypeLabel($item->mime_type) }}</td>
+                                                {{ app(App\Services\File\FileService::class)->getFileTypeLabel($item->mime_type) }}
+                                            </td>
                                             <td class="align-middle">{{ $item->description }}</td>
                                             <td class="align-middle">{{ $item->uploader?->name }}</td>
                                             <td class="align-middle">{{ $item->created_at->format('d/m/Y H:i') }}</td>
                                             <td class="align-middle">{{ $item->updated_at->format('d/m/Y H:i') }}</td>
                                             <td class="align-middle">
                                                 <div class="d-flex align-items-center justify-content-center">
-                                                    @if ($canUploadSoftDelFile($task))
-                                                        <form
-                                                            action="{{ route('myfiles.soft-delete', ['file' => $item->id]) }}"
+                                                    @can('softDelete', $item)
+                                                        <form action="{{ route('myfiles.soft-delete', ['file' => $item->id]) }}"
                                                             method="POST" class="mx-1"
                                                             onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?'})">
                                                             @csrf
@@ -93,7 +90,7 @@
                                                                 </button>
                                                             </span>
                                                         </form>
-                                                    @endif
+                                                    @endcan
                                                     <a href="{{ route('myfiles.download', ['file' => $item->id]) }}"
                                                         class="btn btn-warning btn-sm px-2 py-1 mx-1" data-toggle="tooltip"
                                                         data-placement="top" title="Dowload files">
@@ -208,7 +205,7 @@
                                                     </button>
                                                 </li>
                                             @endcan
-                                            
+
                                             @can('softDelete', $item)
                                                 <li>
                                                     <form action="{{ route('comments.soft-delete', ['comment' => $item->id]) }}"
