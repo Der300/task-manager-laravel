@@ -185,25 +185,5 @@ class ViewServiceProvider extends ServiceProvider
                 'canUploadSoftDelFile' => $canUploadSoftDelFile,
             ]);
         });
-
-        // view()->composer('myfiles.*', function ($view) {
-        //     $user = Auth::user();
-
-        //     $canUpload = function ($item) use ($user) {
-        //         if (!$user || !$item) return false;
-
-        //         if ($user->hasAnyRole(['admin', 'super-admin'])) return true;
-
-        //         if ($user->hasRole('manager') && $user->id === $item->task?->project?->assigned_to) return true;
-
-        //         if ($user->hasAnyRole(['leader', 'member']) && $user->id === $item->task?->assigned_to) return true;
-
-        //         return false;
-        //     };
-
-        //     $view->with([
-        //         'canUpload' => $canUpload,
-        //     ]);
-        // });
     }
 }

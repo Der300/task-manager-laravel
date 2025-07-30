@@ -191,26 +191,38 @@
                                 </div>
 
                                 {{-- Dropdown menu --}}
-                                <div class="dropdown position-absolute" style="bottom: -5px; right: 0;"
-                                    id="dropdown-{{ $item->id }}">
-                                    <button class="btn btn-sm text-warning bg-transparent" type="button"
-                                        data-toggle="dropdown">
-                                        <i class="fa fa-ellipsis-h"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li><button class="dropdown-item edit-comment-btn"
-                                                data-id="{{ $item->id }}">Edit</button></li>
-                                        <li>
-                                            <form action="{{ route('comments.soft-delete', ['comment' => $item->id]) }}"
-                                                method="POST"
-                                                onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?',confirmButtonText: 'yes'})">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger">Delete</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
+                                @can('updateOrSoftDelete', $item)
+                                    <div class="dropdown position-absolute" style="bottom: -5px; right: 0;"
+                                        id="dropdown-{{ $item->id }}">
+                                        <button class="btn btn-sm text-warning bg-transparent" type="button"
+                                            data-toggle="dropdown">
+                                            <i class="fa fa-ellipsis-h"></i>
+                                        </button>
+
+                                        <ul class="dropdown-menu dropdown-menu-right">
+                                            @can('update', $item)
+                                                {{-- gọi update trong comment policy --}}
+                                                <li>
+                                                    <button class="dropdown-item edit-comment-btn"
+                                                        data-id="{{ $item->id }}">Edit
+                                                    </button>
+                                                </li>
+                                            @endcan
+                                            
+                                            @can('softDelete', $item)
+                                                <li>
+                                                    <form action="{{ route('comments.soft-delete', ['comment' => $item->id]) }}"
+                                                        method="POST"
+                                                        onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?',confirmButtonText: 'yes'})">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                                    </form>
+                                                </li>
+                                            @endcan
+                                        </ul>
+                                    </div>
+                                @endcan
                             </div>
 
 

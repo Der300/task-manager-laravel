@@ -25,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
+        // định nghĩa custom-session để cập nhật lại thời gian lưu remember me ở App\Auth\CustomSessionGuard
         Auth::extend('custom-session', function (Application $app, string $name, array $config) {
             $provider = Auth::createUserProvider($config['provider']);
 

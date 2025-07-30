@@ -14,11 +14,7 @@ class CommentPolicy
      */
     public function update(User $user, Comment $comment): bool
     {
-        if ($user->hasRole('super-admin')) {
-            return true;
-        }
-
-        return $user->id === $comment->user_id;
+        return $user->id === $comment->user_id || $user->hasRole('super-admin');
     }
 
     /**
@@ -26,11 +22,7 @@ class CommentPolicy
      */
     public function softDelete(User $user, Comment $comment): bool
     {
-        if ($user->hasAnyRole(['super-admin', 'admin','manager'])) {
-            return true;
-        }
-
-        return $user->id === $comment->user_id;
+        return $user->id === $comment->user_id || $user->hasAnyRole(['super-admin', 'admin', 'manager']);
     }
 
     /**
@@ -39,5 +31,10 @@ class CommentPolicy
     public function restore(User $user, Comment $comment): bool
     {
         return $this->softDelete($user, $comment);
+    }
+
+    public function updateOrSoftDelete(User $user, Comment $comment): bool
+    {
+        return $this->update($user, $comment) || $this->softDelete($user, $comment);
     }
 }

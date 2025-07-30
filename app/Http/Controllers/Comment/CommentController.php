@@ -2,25 +2,23 @@
 
 namespace App\Http\Controllers\Comment;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+
 use App\Http\Requests\Comment\StoreCommentRequest;
 use App\Http\Requests\Comment\UpdateCommentRequest;
-use App\Http\Requests\Task\UpdateTaskRequest;
+use App\Services\Comment\CommentService;
 use App\Models\Comment;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\CommentAdded;
 use App\Notifications\CommentForceDeleted;
 use App\Notifications\CommentRestored;
+use Exception;
 use App\Notifications\CommentSoftDeleted;
 use App\Notifications\CommentUpdated;
-use App\Notifications\TaskCommented;
-use App\Services\Comment\CommentService;
-use Exception;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
 {
@@ -38,9 +36,9 @@ class CommentController extends Controller
         $user = Auth::user();
         $data = null;
         if ($user->hasAnyRole(['admin', 'super-admin'])) {
-            $data = $this->commentService->getCommentsWithPanigation();
-        } elseif (Comment::where('user_id', $user->id)->exists()) {
-            $data = $this->commentService->getCommentsWithPanigation(['user_id' => $user->id]);
+            $data = $this->commentService->getCommentsWithPagination();
+        } else {
+            $data = $this->commentService->getCommentsWithPagination($user->id);
         }
         return view('comments.index', ['data' => $data]);
     }
@@ -77,12 +75,8 @@ class CommentController extends Controller
             DB::commit();
             // gửi thông báo nếu người gửi khác assinged_to của task
             if ($assigneeId && $assigneeId !== $user->id) {
-                User::query()
-                    ->find($assigneeId)?->notify(
-                        new CommentAdded($comment, $task->id, $user->name)
-                    );
+                $task->assignedUser?->notify(new CommentAdded($comment, $task->id, $user->name));
             }
-
 
             return redirect()->route('tasks.show', ['task' => $task->id])->with('success', 'Comment added!');
         } catch (Exception $e) {
@@ -100,8 +94,10 @@ class CommentController extends Controller
         $user = Auth::user();
         $this->authorize('update', $comment);
         $data = $request->validated();
+
         $comment->body = $data['body'];
         $comment->save();
+
         if ($user->id !== $comment->user_id) {
             $comment->user?->notify(new CommentUpdated($comment, $comment->task_id, $user->name));
         }
@@ -147,7 +143,6 @@ class CommentController extends Controller
                 }
                 return redirect()->route('tasks.show', ['task' => $comment->task_id, 'comment_id' => $comment->id])->with('success', 'Comment restored successfully.');
             }
-            return back()->with('error', 'Comment is not deleted.');
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to restore comment.');
         }

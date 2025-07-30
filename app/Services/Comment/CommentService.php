@@ -5,116 +5,102 @@ namespace App\Services\Comment;
 use App\Models\Comment;
 use App\Models\User;
 use App\Services\Project\ProjectService;
-use App\Services\Task\TaskService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class CommentService
 {
-    /**
-     * Lấy comments gan nhat
-     *
-     * @return \Illuminate\Support\Collection của các stdClass object
-     */
-    public function getRecentComments(User $currentUser): Collection
+    protected ProjectService $projectService;
+
+    public function __construct(ProjectService $projectService)
     {
-        $query = Comment::with('user', 'task');
-        $projectService = new ProjectService();
-        $taskService = new TaskService();
-        if ($currentUser->hasRole('manager')) {
-            $projectIds = $projectService->getProjectAssignedIdsWithUser($currentUser->id);
-
-            $taskIds = $taskService->getActiveTaskIdsWithArrayProjectId($projectIds);
-
-            $query->whereIn('task_id', $taskIds);
-        } elseif ($currentUser->hasRole('member')) {
-            $taskIds = $taskService->getTaskWithUserId($currentUser->id)->pluck('id');
-
-            $query->whereIn('task_id', $taskIds);
-        } elseif ($currentUser->hasRole('client')) {
-            $projectIds = $projectService->getProjects(['client_id' => $currentUser->id])->pluck('id');
-
-            $taskIds = $taskService->getActiveTaskIdsWithArrayProjectId($projectIds);
-
-            $query->whereIn('task_id', $taskIds);
-        }
-
-        return $query
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get();
+        $this->projectService = $projectService;
     }
 
     /**
-     * Lấy danh sách comment trong hệ thống hoặc theo filters cụ thể.
-     *
-     * @param array $filters VD: ['user_id' => 1] $field === 'not_in' value phải là mảng kiểu ['not_in' => ['key' => ['value1', 'value2']]]
-     * @return \Illuminate\Support\Collection
+     * Lấy comments gần nhất.
      */
-    public function getComments(array $filters = []): Collection
+    public function getRecentComments(string $role, User $user): Collection
     {
+        $query = Comment::with(['user', 'task']);
+
+        if ($role === 'manager') {
+            $query->whereHas('task.project', fn($q) => $q->where('assigned_to', $user->id));
+        } elseif ($role === 'member') {
+            $query->whereHas('task', fn($q) => $q->where('assigned_to', $user->id));
+        } elseif ($role === 'client') {
+            $query->whereHas('task.project', fn($q) => $q->where('client_id', $user->id));
+        }
+
+        return $query->latest('updated_at')->limit(50)->get();
+    }
+
+
+    /**
+     * Lấy danh sách comment có phân trang.
+     */
+    public function getCommentsWithPagination(?string $userId = null): LengthAwarePaginator
+    {
+        $perPage = (int) env('ITEM_PER_PAGE', 20);
         $query = Comment::query();
 
-        foreach ($filters as $field => $value) {
-            if ($field === 'not_in' && is_array($value)) {
-                foreach ($value as $notInField => $notInValues) {
-                    $query->whereNotIn($notInField, $notInValues);
-                }
-            } elseif (is_array($value) && !empty($value)) {
-                $query->whereIn($field, $value);
-            } elseif (!is_null($value)) {
-                $query->where($field, $value);
-            }
+        if ($userId) {
+            $query->where('user_id', $userId);
         }
-        return $query->orderBy('updated_at', 'asc')->get();
-    }
-
-    public function getCommentsWithPanigation(array $filters = []): LengthAwarePaginator
-    {
-        $query = Comment::query();
-        $perPage = env('ITEM_PER_PAGE', 20);
-        foreach ($filters as $field => $value) {
-            if ($field === 'not_in' && is_array($value)) {
-                foreach ($value as $notInField => $notInValues) {
-                    $query->whereNotIn($notInField, $notInValues);
-                }
-            } elseif (is_array($value) && !empty($value)) {
-                $query->whereIn($field, $value);
-            } elseif (!is_null($value)) {
-                $query->where($field, $value);
-            }
-        }
-        return $query->orderBy('updated_at', 'desc')->paginate($perPage);
+        return $query->latest('deleted_at')->paginate($perPage);
     }
 
     /**
-     * Lấy tổng số comment trong hệ thống hoặc theo filters cụ thể.
-     *
-     * @param array $filters VD: ['user_id' => 1]
-     * @return int Tổng số project
+     * Đếm số lượng comment theo filter.
      */
     public function countComments(array $filters = []): int
     {
-        return $this->getComments($filters)->count();
+        return $this->applyFilters(Comment::query(), $filters)->count();
     }
 
+    /**
+     * Lấy tất cả comment của 1 task.
+     */
     public function getAllCommentWithTaskId(string $taskId): Collection
     {
         return Comment::with('user:id,name,image,position,department,role')
             ->where('task_id', $taskId)
-            ->orderBy('updated_at', 'desc')
+            ->latest('updated_at')
             ->get();
     }
 
+    /**
+     * Lấy comment đã xóa mềm theo user.
+     */
     public function getDataCommentRecycleTable(?string $userId = null): LengthAwarePaginator
     {
-        $itemsPerPage = env('ITEM_PER_PAGE', 5);
+        $query = Comment::onlyTrashed();
+        $perPage = (int) env('ITEM_PER_PAGE', 5);
         if ($userId) {
-            $query = Comment::onlyTrashed()->where('user_id', $userId);
-        } else {
-            $query = Comment::onlyTrashed();
+            $query->where('user_id', $userId);
         }
-        return $query->orderByDesc('deleted_at')->paginate($itemsPerPage);
+
+        return $query->latest('deleted_at')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Gắn filter vào query.
+     */
+    protected function applyFilters($query, array $filters)
+    {
+        foreach ($filters as $field => $value) {
+            if ($field === 'not_in' && is_array($value)) {
+                foreach ($value as $notInField => $notInValues) {
+                    $query->whereNotIn($notInField, $notInValues);
+                }
+            } elseif (is_array($value) && !empty($value)) {
+                $query->whereIn($field, $value);
+            } elseif (!is_null($value)) {
+                $query->where($field, $value);
+            }
+        }
+
+        return $query;
     }
 }

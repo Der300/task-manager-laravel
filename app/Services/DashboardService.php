@@ -288,9 +288,9 @@ class DashboardService
     }
 
     // {{-- Hien thi comments gan nhat --}}
-    public function getDataComment(User $currentUser): array
+    public function getDataComment(User $user): array
     {
-        $comments = $this->commentService->getRecentComments($currentUser);
+        $comments = $this->commentService->getRecentComments($user->role,$user);
 
         return $comments->map(function ($comment) {
             return [
