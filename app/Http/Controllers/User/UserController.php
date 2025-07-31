@@ -74,7 +74,6 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         $data = $request->validated();
-
         try {
             DB::beginTransaction();
 

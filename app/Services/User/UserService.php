@@ -18,6 +18,7 @@ class UserService
 {
     protected string $imageFolder = 'images/users/';
     protected string $imageFolderTrash = 'images/users/trash';
+
     /**
      * Lấy danh sách user trong hệ thống hoặc theo filters cụ thể.
      *
@@ -112,6 +113,7 @@ class UserService
             ->paginate($itemsPerPage);
     }
 
+
     /**
      * Lưu ảnh vào nơi chứa ảnh
      * @param UploadedFile $image file ảnh lấy từ request
@@ -170,6 +172,7 @@ class UserService
         }
     }
 
+
     /**
      * Lấy dữ liệu để điền form tạo hoặc edit user
      * @param ?User $user tên user nếu có
@@ -192,6 +195,10 @@ class UserService
 
         ];
     }
+
+    /** ============================================================================
+     * ==========================================================================*/
+
     /**
      * Kiểm tra xem user có dữ liệu liên quan không.
      * Trả về mảng dữ liệu liên quan (key => count) nếu có, hoặc mảng rỗng nếu không.

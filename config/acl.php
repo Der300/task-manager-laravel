@@ -11,7 +11,7 @@ return [
     // module.action
     'permissions' => [
         'dashboard' => ['view'],
-        'user'      => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],
+        'user'      => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete', 'reset-password'],
         'project'   => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],
         'task'      => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],
         'comment'   => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],
@@ -26,7 +26,7 @@ return [
             'level' => 2,
             'permissions' => [
                 'dashboard' => ['view'],
-                'user'      => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],
+                'user'      => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete', 'reset-password'],
                 'project'   => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],
                 'task'      => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],
                 'comment'   => ['view', 'create', 'edit', 'soft-delete', 'restore', 'force-delete'],    //edit owm
@@ -38,7 +38,7 @@ return [
             'permissions' => [
                 'dashboard' => ['view'],
                 'user'      => ['view', 'edit'], //own edit 
-                'project'   => ['view', 'create', 'edit', 'soft-delete', 'restore'], //'soft-delete', 'restore' own
+                'project'   => ['view', 'create', 'edit', 'soft-delete', 'restore', 'reset-password'], //'soft-delete', 'restore' own, 'reset-password' team
                 'task'      => ['view', 'create', 'edit', 'soft-delete', 'restore'], //'soft-delete', 'restore' team
                 'comment'   => ['view', 'create', 'edit', 'soft-delete', 'restore'], //'soft-delete', 'restore' team, edit own
                 'file'      => ['view', 'upload', 'download', 'soft-delete', 'restore'], //'soft-delete', 'restore' team
@@ -50,7 +50,7 @@ return [
                 'dashboard' => ['view'],
                 'user'      => ['view', 'edit'], // own edit
                 'project'   => ['view'],
-                'task'      => ['view', 'create', 'edit', 'soft-delete', 'restore'], //'soft-delete', 'restore' own
+                'task'      => ['view', 'create', 'edit', 'soft-delete', 'restore', 'reset-password'], //'soft-delete', 'restore' own ,'reset-password' team
                 'comment'   => ['view', 'create', 'edit', 'soft-delete', 'restore'], // 'edit', 'soft-delete', 'restore' own
                 'file'      => ['view', 'upload', 'download', 'soft-delete', 'restore'], //'soft-delete', 'restore' own
             ],

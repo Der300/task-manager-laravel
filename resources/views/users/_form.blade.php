@@ -47,12 +47,12 @@
                                     width="100px" />
                             </div>
                         @endif
-                        <input type="file" name="image" id="image"
-                            class="form-control-file @error('image') is-invalid @enderror">
+                        <input type="file" name="image" id="image" accept="image/*"
+                            class="form-control form-control-file @error('image') is-invalid @enderror">
+                        @error('image')
+                            <span class="invalid-feedback">{{ $message }}</span>
+                        @enderror
                     </div>
-                    @error('image')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
                 </div>
             </div>
             <div class="col-md-6 col-sm-12">

@@ -7,37 +7,44 @@ use App\Models\User;
 class UserPolicy
 {
 
-    private function isAdminOrSuperAdmin(User $user): bool
+    private function isAdminOrSuperAdmin(User $currentUser): bool
     {
-        return $user->hasAnyRole(['super-admin', 'admin']);
+        return $currentUser->hasAnyRole(['super-admin', 'admin']);
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, User $model): bool
+    public function view(User $currentUser, User $user): bool
     {
-        if ($user->hasRole('super-admin')) {
+        if ($currentUser->hasRole('super-admin')) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
-            if ($user->id === $model->id) return true;
+        if ($currentUser->hasRole('admin')) {
+            if ($currentUser->id === $user->id) return true;
 
-            if (!in_array($model->role, ['admin', 'super-admin'])) return true;
+            if (!in_array($user->role, ['admin', 'super-admin'])) return true;
 
             return false;
         }
 
-        return $user->id === $model->id;
+        return $currentUser->id === $user->id;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, User $model): bool
+    public function update(User $currentUser, User $user): bool
     {
-        return $this->isAdminOrSuperAdmin($user) || $user->id === $model->id;
+        return $this->isAdminOrSuperAdmin($currentUser) || $currentUser->id === $user->id;
     }
 
+
+    public function resetPassword(User $currentUser, User $user): bool
+    {
+        if ($this->isAdminOrSuperAdmin($currentUser) && $currentUser->id !== $user->id) return true;
+
+        if ($currentUser->hasAnyRole(['manager', 'leader'])) {
+            return $currentUser->department === $user->department && $currentUser->id !== $user->id;
+        }
+        return false;
+    }
 }

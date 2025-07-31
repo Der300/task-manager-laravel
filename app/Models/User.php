@@ -13,16 +13,7 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, HasRoles, SoftDeletes;
     public $table = 'users';
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'position',
-        'department',
-        'status',
-        'role',
-        'image',
-    ];
+    protected $guarded = [];
 
     public function projects()
     { //moi quan he many-to-many project_user table
