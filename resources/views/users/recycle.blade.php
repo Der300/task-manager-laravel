@@ -76,7 +76,7 @@
         </div>
         <!-- /.card-body -->
         <div class="card-footer clearfix">
-            {{ $data->links() }}
+            {{ $data?->links() }}
         </div>
     </div>
     <!-- /.card -->

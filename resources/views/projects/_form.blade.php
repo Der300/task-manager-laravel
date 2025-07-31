@@ -1,3 +1,9 @@
+@php
+    $user = Auth::user();
+    $isClient = $user?->hasRole('client');
+    $canUpdateField = !$isCreate && $user->cannot('update', $project);
+@endphp
+
 <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="col-md-12 col-sm-12">
     @csrf
     @if (!$isCreate)
@@ -13,19 +19,20 @@
                     <input type="text" name="name" id="name"
                         class="form-control @error('name') is-invalid @enderror"
                         value="{{ old('name', $project->name ?? '') }}" required autocomplete="on"
-                        {{ $canUpdate($project) ? '' : 'disabled' }}>
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                     @error('name')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
 
                 {{-- Slug --}}
-                @if ($exceptClient)
+                @if (!$isClient)
                     <div class="form-group">
                         <label for="slug">Slug <span class="text-danger">*</span></label>
                         <input type="text" name="slug" id="slug"
                             class="form-control @error('slug') is-invalid @enderror"
-                            value="{{ old('slug', $project->slug ?? '') }}" required {{ $canUpdate($project) ? '' : 'disabled' }}>
+                            value="{{ old('slug', $project->slug ?? '') }}" required
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                         @error('slug')
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
@@ -36,19 +43,19 @@
                 <div class="form-group">
                     <label for="description">Description</label>
                     <textarea name="description" id="description" rows="4"
-                        class="form-control @error('description') is-invalid @enderror" {{ $canUpdate($project) ? '' : 'disabled' }}>{{ old('description', $project->description ?? '') }}</textarea>
+                        class="form-control @error('description') is-invalid @enderror" @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>{{ old('description', $project->description ?? '') }}</textarea>
                     @error('description')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
 
                 {{-- Client + Created By --}}
-                @if ($exceptClient)
+                @if (!$isClient)
                     <div class="form-group">
                         <label for="client_id">Client</label>
                         <select name="client_id" id="client_id"
                             class="form-control @error('client_id') is-invalid @enderror"
-                            {{ $canUpdate($project) ? '' : 'disabled' }}>
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                             <option value="">-- Select Client --</option>
                             @foreach ($clients as $id => $name)
                                 <option value="{{ $id }}"
@@ -65,7 +72,7 @@
                         <label for="created_by">Created By</label>
                         <select name="created_by" id="created_by"
                             class="form-control @error('created_by') is-invalid @enderror"
-                            {{ $canUpdate($project) ? '' : 'disabled' }}>
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                             <option value="">-- Select Creator --</option>
                             @foreach ($createdUsers as $id => $name)
                                 <option value="{{ $id }}"
@@ -83,12 +90,12 @@
 
             <div class="col-md-6 col-sm-12">
                 {{-- Assignee + Issue Type --}}
-                @if ($exceptClient)
+                @if (!$isClient)
                     <div class="form-group">
                         <label for="assigned_to">Assignee</label>
                         <select name="assigned_to" id="assigned_to"
                             class="form-control @error('assigned_to') is-invalid @enderror"
-                            {{ $canUpdate($project) ? '' : 'disabled' }}>
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                             <option value="">-- Select Assignee --</option>
                             @foreach ($assignedUsers as $id => $name)
                                 <option value="{{ $id }}"
@@ -104,7 +111,7 @@
                         <label for="issue_type_id">Issue Type</label>
                         <select name="issue_type_id" id="issue_type_id"
                             class="form-control @error('issue_type_id') is-invalid @enderror"
-                            {{ $canUpdate($project) ? '' : 'disabled' }}>
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                             <option value="">-- Select Issue Type --</option>
                             @foreach ($issueTypes as $value => $name)
                                 <option value="{{ $value }}"
@@ -123,7 +130,7 @@
                     <label for="status_id">Status</label>
                     <select name="status_id" id="status_id"
                         class="form-control @error('status_id') is-invalid @enderror"
-                        {{ $canUpdate($project) ? '' : 'disabled' }}>
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                         <option value="">-- Select Status --</option>
                         @foreach ($statuses as $value => $name)
                             <option value="{{ $value }}"
@@ -141,7 +148,8 @@
                     <label for="start_date">Start Date</label>
                     <input type="date" name="start_date" id="start_date"
                         class="form-control @error('start_date') is-invalid @enderror"
-                        value="{{ old('start_date', $project->start_date ?? '') }}" {{ $canUpdate($project) ? '' : 'disabled' }}>
+                        value="{{ old('start_date', $project->start_date ?? '') }}"
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                     @error('start_date')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -152,7 +160,8 @@
                     <label for="due_date">Due Date</label>
                     <input type="date" name="due_date" id="due_date"
                         class="form-control @error('due_date') is-invalid @enderror"
-                        value="{{ old('due_date', $project->due_date ?? '') }}" {{ $canUpdate($project) ? '' : 'disabled' }}>
+                        value="{{ old('due_date', $project->due_date ?? '') }}"
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                     @error('due_date')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -160,7 +169,7 @@
             </div>
         </div>
         <div class="card-footer text-center">
-            @if ($canUpdate($project))
+            @if (!$canUpdateField)
                 <button type="submit"
                     class="btn btn-{{ $isCreate ? 'success' : 'warning' }}">{{ $isCreate ? 'Create Project' : 'Update Project' }}</button>
             @endif

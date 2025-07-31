@@ -8,23 +8,15 @@ use Illuminate\Auth\Access\Response;
 
 class ProjectPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        // nếu client không có project nào thì không vào project list được
-        return !$user->hasRole('client') || $user->projects()->exists();
-    }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Project $model): bool
+    public function view(User $user, Project $project): bool
     {
         if ($user->hasRole('client')) {
             // Client chỉ xem được nếu thuộc project
-            return $user->id === $model->client_id;
+            return $user->id === $project->client_id;
         }
 
         return true;
@@ -33,13 +25,13 @@ class ProjectPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Project $model): bool
+    public function update(User $user, Project $project): bool
     {
         if ($user->hasAnyRole(['super-admin', 'admin'])) {
             return true;
         }
-        if ($user->hasRole('manager') && $user->id === $model->assigned_to) {
-            return true;
+        if ($user->hasRole('manager')) {
+            return $user->id === $project->assigned_to;
         }
 
         return false;
@@ -49,16 +41,16 @@ class ProjectPolicy
     /**
      * Determine whether the user soft delete the model.
      */
-    public function softDelete(User $user, Project $model): bool
+    public function softDelete(User $user, Project $project): bool
     {
-        return $this->update($user, $model);
+        return $this->update($user, $project);
     }
 
     /**
      * Determine whether the user restore the model.
      */
-    public function restore(User $user, Project $model): bool
+    public function restore(User $user, Project $project): bool
     {
-        return $this->update($user, $model);
+        return $this->update($user, $project);
     }
 }

@@ -70,7 +70,7 @@
         @endforelse
 
         <div class="card-footer mb-0 pb-0">
-            {{ $data->links() }}
+            {{ $data?->links() }}
         </div>
     </div>
 @endsection

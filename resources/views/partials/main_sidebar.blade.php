@@ -110,15 +110,15 @@
                                 <p>Project List</p>
                             </a>
                         </li>
-                        @if ($roleAboveLeader)
+                        @can('project.create')
                             <li class="nav-item">
                                 <a href="{{ route('projects.create') }}" class="nav-link">
                                     <i class="fa fa-plus nav-icon ml-3"></i>
                                     <p>New Project</p>
                                 </a>
                             </li>
-                        @endif
-                        @if ($roleAboveLeader)
+                        @endcan
+                        @can('project.restore')
                             <li class="nav-item">
                                 <a href="{{ route('projects.recycle') }}"
                                     class="nav-link {{ request()->routeIs('projects.recycle') ? 'active' : '' }}">
@@ -126,7 +126,7 @@
                                     <p>Project recycle</p>
                                 </a>
                             </li>
-                        @endif
+                        @endcan
                     </ul>
                 </li>
 

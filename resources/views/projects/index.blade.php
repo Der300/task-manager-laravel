@@ -1,15 +1,18 @@
 @extends('layouts.master')
 @section('title', 'Projects')
 @section('content_wrapper')
+    @php
+        $isClient = Auth::user()->hasRole('client');
+    @endphp
     <div class="card">
         <div class="card-header pb-0">
             <form method="GET" action="{{ route('projects.index') }}" class="row">
                 <div class="col-md-2 mb-2">
-                    @if ($roleAboveLeader)
+                    @can('project.create')
                         <a href="{{ route('projects.create') }}" class="btn btn-success">
                             <i class="fa fa-plus mr-2" aria-hidden="true"></i> Create Projects
                         </a>
-                    @endif
+                    @endcan
                 </div>
                 {{-- Tìm kiếm tên project --}}
                 <div class="col-md-2 mb-2">
@@ -67,7 +70,7 @@
                             <th class="align-middle">Description</th>
                             <th class="align-middle">Status</th>
                             <th class="align-middle">Assignee</th>
-                            @if ($exceptClient)
+                            @if (!$isClient)
                                 <th class="align-middle">Client</th>
                                 <th class="align-middle">Due day</th>
                             @endif
@@ -76,7 +79,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-center">
-                        @foreach ($data as $item)
+                        @foreach ($data ?? [] as $item)
                             <tr>
                                 <td class="align-middle">
                                     {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
@@ -93,7 +96,7 @@
                                 <td class="align-middle">
                                     {{ $item->assignedUser?->name }}
                                 </td>
-                                @if ($exceptClient)
+                                @if (!$isClient)
                                     <td class="align-middle">
                                         {{ $item->clientUser?->name }}
                                     </td>
@@ -106,7 +109,7 @@
                                 </td>
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center justify-content-center">
-                                        @if ($canSoftDel($item))
+                                        @can('softDelete', $item)
                                             <form action="{{ route('projects.soft-delete', $item) }}" method="POST"
                                                 class="mx-1"
                                                 onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?'})">
@@ -118,7 +121,7 @@
                                                     </button>
                                                 </span>
                                             </form>
-                                        @endif
+                                        @endcan
                                         <a href="{{ route('projects.show', $item) }}"
                                             class="btn btn-warning btn-sm px-2 py-1 mx-1" data-toggle="tooltip"
                                             data-placement="top" title="Detail">
@@ -134,7 +137,7 @@
         </div>
         <!-- /.card-body -->
         <div class="card-footer clearfix">
-            {{ $data->links() }}
+            {{ $data?->links() }}
         </div>
     </div>
 

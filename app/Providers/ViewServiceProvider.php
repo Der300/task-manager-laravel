@@ -104,39 +104,5 @@ class ViewServiceProvider extends ServiceProvider
                 'canSeeProfile' => $canSeeProfile,
             ]);
         });
-
-        view()->composer('projects.*', function ($view) {
-            $user = Auth::user();
-
-            $roleAboveLeader = $user ? $user->hasAnyRole(['admin', 'super-admin', 'manager']) : false;
-
-            $canSoftDel = function ($item) use ($user) {
-                if (!$user || !$item) return false;
-
-                if ($user->hasAnyRole(['admin', 'super-admin'])) return true;
-
-                if ($user->hasRole('manager') && $user->id === $item->assigned_to) return true;
-
-                return false;
-            };
-
-            $roleAboveManager = $user ? $user->hasAnyRole(['admin', 'super-admin']) : false;
-
-            $exceptClient = !$user->hasRole('client');
-
-            $canUpdate = function ($item) use ($user) {
-                if ($user->hasAnyRole(['admin', 'super-admin'])) return true;
-                if ($user->hasRole('manager') && $user->id === $item->assigned_to) return true;
-                return false;
-            };
-
-            $view->with([
-                'roleAboveLeader' => $roleAboveLeader,
-                'roleAboveManager' => $roleAboveManager,
-                'canSoftDel' => $canSoftDel,
-                'exceptClient' => $exceptClient,
-                'canUpdate' => $canUpdate,
-            ]);
-        });
     }
 }

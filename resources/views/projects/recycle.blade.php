@@ -20,7 +20,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-center">
-                        @foreach ($data as $item)
+                        @foreach ($data ?? [] as $item)
                             <tr>
                                 <td class="align-middle">
                                     {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
@@ -48,9 +48,9 @@
                                 </td>
                                 <td class="align-middle text-center">
                                     <div class="d-flex align-items-center justify-content-center">
-                                        @if ($roleAboveManager)
-                                            <form action="{{ route('projects.force-delete',$item) }}"
-                                                method="POST" class="mx-1"
+                                        @can('project.force-delete')
+                                            <form action="{{ route('projects.force-delete', $item) }}" method="POST"
+                                                class="mx-1"
                                                 onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Delete',text: 'Are you sure you want to delete?',confirmButtonText: 'delete'})">
                                                 @csrf
                                                 @method('DELETE')
@@ -60,9 +60,8 @@
                                                     </button>
                                                 </span>
                                             </form>
-                                        @endif
-                                        <form action="{{ route('projects.restore', $item) }}"
-                                            method="POST" class="mx-1"
+                                        @endcan
+                                        <form action="{{ route('projects.restore', $item) }}" method="POST" class="mx-1"
                                             onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Restore',text: 'Are you sure you want to restore?',confirmButtonText: 'restore'})">
                                             @csrf
                                             <span data-toggle="tooltip" data-placement="top" title="Restore">
@@ -83,7 +82,7 @@
         </div>
         <!-- /.card-body -->
         <div class="card-footer clearfix">
-            {{ $data->links() }}
+            {{ $data?->links() }}
         </div>
     </div>
     <!-- /.card -->

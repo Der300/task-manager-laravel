@@ -37,8 +37,6 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-
-        $this->authorize('viewAny', Project::class);
         $user = Auth::user();
 
         $statuses = Status::orderBy('order', 'asc')->pluck('name', 'id');
