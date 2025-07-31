@@ -155,7 +155,7 @@
                                 </a>
                             </li>
                         @endif
-                        @if ($roleAboveLeader)
+                        @can('task.soft-delete')
                             <li class="nav-item">
                                 <a href="{{ route('tasks.recycle') }}"
                                     class="nav-link {{ request()->routeIs('tasks.recycle') ? 'active' : '' }}">
@@ -163,7 +163,7 @@
                                     <p>Task recycle</p>
                                 </a>
                             </li>
-                        @endif
+                        @endcan
                     </ul>
                 </li>
 

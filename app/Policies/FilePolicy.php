@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\File;
+use App\Models\Task;
 use App\Models\User;
 
 class FilePolicy
@@ -17,6 +18,9 @@ class FilePolicy
 
     public function softDelete(User $user, File $file)
     {
+        if ($user->hasRole('manager')) {
+            return $file->task?->project?->assigned_to === $user->id;
+        }
         if ($user->hasAnyRole(['leader', 'member'])) {
             return $file->task?->assigned_to === $user->id;
         }
@@ -25,13 +29,5 @@ class FilePolicy
         }
 
         return true;
-    }
-
-    public function forceDelete(User $user, File $file)
-    {
-        if ($user->hasAnyRole(['admin', 'super-admin'])) {
-            return true;
-        }
-        return false;
     }
 }

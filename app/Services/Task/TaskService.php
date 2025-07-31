@@ -21,6 +21,20 @@ class TaskService
 
     protected string $fileFolder = 'files/';
     protected string $fileFolderTrash = 'files/trash/';
+
+    private function getNow(): Carbon
+    {
+        return Carbon::now();
+    }
+
+    private function getStartOfWeek(): Carbon
+    {
+        return $this->getNow()->copy()->startOfWeek();
+    }
+    private function getEndOfWeek(): Carbon
+    {
+        return $this->getNow()->copy()->endOfWeek();
+    }
     /**
      * Lấy danh sách task trong hệ thống hoặc theo filters cụ thể.
      *
@@ -104,8 +118,8 @@ class TaskService
      */
     public function getActiveTasksStatusChangedThisWeek(): Collection
     {
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
+        $startOfWeek = $this->getStartOfWeek();
+        $endOfWeek = $this->getEndOfWeek();
 
         return $this->baseActiveTaskQuery()
             ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
@@ -121,8 +135,8 @@ class TaskService
      */
     public function getActiveTasksStatusChangedThisWeekInProjects(Collection $projectIds): Collection
     {
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
+        $startOfWeek = $this->getStartOfWeek();
+        $endOfWeek = $this->getEndOfWeek();
 
         return $this->baseActiveTaskQuery()
             ->whereHas('project', function ($query) use ($projectIds) {
@@ -185,11 +199,9 @@ class TaskService
      */
     public function getActiveTasksOverdue(): Collection
     {
-        $now = Carbon::now();
-
         return $this->baseActiveTaskQuery()
             ->whereNotNull('due_date')
-            ->where('due_date', '<=', $now)
+            ->where('due_date', '<=', $this->getNow())
             ->orderBy('due_date', 'asc')
             ->limit(50)
             ->get();
@@ -202,14 +214,12 @@ class TaskService
      */
     public function getActiveTasksOverdueInProjects(Collection $projectIds): Collection
     {
-        $now = Carbon::now();
-
         return $this->baseActiveTaskQuery()
             ->whereHas('project', function ($query) use ($projectIds) {
                 $query->whereIn('id', $projectIds);
             })
             ->whereNotNull('due_date')
-            ->where('due_date', '<=', $now)
+            ->where('due_date', '<=', $this->getNow())
             ->orderBy('due_date', 'asc')
             ->limit(50)
             ->get();
@@ -238,10 +248,10 @@ class TaskService
     {
         $itemsPerPage = env('ITEM_PER_PAGE', 20);
         $user = Auth::user();
-        $query = Task::query()->with([
+        $query = Task::query()->whereHas('project')->with([
             'status:id,name,color',
             'assignedUser:id,name',
-            'project:id,name,client_id',
+            'project:id,name,client_id,assigned_to',
             'project.clientUser:id,name',
         ])
             ->leftJoin('users as assigned_users', 'tasks.assigned_to', '=', 'assigned_users.id')
@@ -307,14 +317,6 @@ class TaskService
                 END", [$user->id]);
         }
 
-        if (!$user->hasAnyRole(['admin', 'super-admin', 'manager'])) {
-            $query->orderByRaw("
-                CASE 
-                    WHEN tasks.assigned_to = ? THEN 0
-                    ELSE 1
-                END", [$user->id]);
-        }
-
         return $query
             ->orderBy('status_id', 'asc')
             ->orderBy('due_date', 'asc')
@@ -333,7 +335,7 @@ class TaskService
 
         $createdUsers = User::whereIn('role', ['super-admin', 'admin', 'manager', 'leader'])->orderBy('role')->withTrashed()->pluck('name', 'id');
         $assignedUsers = User::whereIn('role', ['leader', 'member'])->orderBy('name')->withTrashed()->pluck('name', 'id');
-        $projects = Project::withTrashed()->pluck('name', 'id');
+        $projects = Project::withTrashed()->get(['id', 'name', 'assigned_to', 'client_id']);;
         return [
             'task' => $isCreate ? null : $task,
             'statuses' => $statuses,

@@ -1,3 +1,11 @@
+@php
+    $user = Auth::user();
+    $isClient = $user?->hasRole('client');
+    $isMember = $user?->hasRole('member');
+    $canUpdateField = !$isCreate && ($user->cannot('update', $task) || $isMember);
+    $canUpdateFieldStatus = !$isCreate && $user->cannot('update', $task);
+@endphp
+
 <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="col-md-12 col-sm-12">
     @csrf
     @if (!$isCreate)
@@ -13,7 +21,7 @@
                     <input type="text" name="name" id="name"
                         class="form-control @error('name') is-invalid @enderror"
                         value="{{ old('name', $task->name ?? '') }}" required autocomplete="on"
-                        {{ $canUpdate($task) ? '' : 'disabled' }}>
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                     @error('name')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -24,12 +32,12 @@
                     <label for="project_id">Project Name <span class="text-danger">*</span></label>
                     <select name="project_id" id="project_id"
                         class="form-control @error('project_id') is-invalid @enderror"
-                        {{ $canUpdate($task) ? '' : 'disabled' }}>
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                         <option value="">-- Select Project Name --</option>
-                        @foreach ($projects as $id => $name)
-                            <option value="{{ $id }}"
-                                {{ old('project_id', $task->project?->id ?? '') == $id ? 'selected' : '' }}>
-                                {{ $name }}</option>
+                        @foreach ($projects as $project)
+                            <option value="{{ $project->id }}"
+                                {{ old('project_id', $task->project?->id ?? '') == $project->id ? 'selected' : '' }}>
+                                {{ $project->name }}</option>
                         @endforeach
                     </select>
                     @error('project_id')
@@ -41,21 +49,22 @@
                 <div class="form-group">
                     <label for="description">Description</label>
                     <textarea name="description" id="description" rows="4"
-                        class="form-control @error('description') is-invalid @enderror" {{ $canUpdate($task) ? '' : 'disabled' }}>{{ old('description', $task->description ?? '') }}</textarea>
+                        class="form-control @error('description') is-invalid @enderror"
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>{{ old('description', $task->description ?? '') }}</textarea>
                     @error('description')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
 
-                
+
                 {{-- Created By --}}
 
-                @if ($exceptClient)
+                @if (!$isClient)
                     <div class="form-group">
                         <label for="created_by">Created By</label>
                         <select name="created_by" id="created_by"
                             class="form-control @error('created_by') is-invalid @enderror"
-                            {{ $canUpdate($task) ? '' : 'disabled' }}>
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                             <option value="">-- Select Creator --</option>
                             @foreach ($createdUsers as $id => $name)
                                 <option value="{{ $id }}"
@@ -73,13 +82,12 @@
 
             <div class="col-md-6 col-sm-12">
                 {{-- Assignee + Issue Type --}}
-                @if ($exceptClient)
+                @if (!$isClient)
                     <div class="form-group">
                         <label for="assigned_to">Assignee</label>
                         <select name="assigned_to" id="assigned_to"
                             class="form-control @error('assigned_to') is-invalid @enderror"
-                            {{ $canUpdate($task) ? '' : 'disabled' }}
-                            >
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                             <option value="">-- Select Assignee --</option>
                             @foreach ($assignedUsers as $id => $name)
                                 <option value="{{ $id }}"
@@ -95,7 +103,7 @@
                         <label for="issue_type_id">Issue Type</label>
                         <select name="issue_type_id" id="issue_type_id"
                             class="form-control @error('issue_type_id') is-invalid @enderror"
-                            {{ $canUpdate($task) ? '' : 'disabled' }}>
+                            @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                             <option value="">-- Select Issue Type --</option>
                             @foreach ($issueTypes as $value => $name)
                                 <option value="{{ $value }}"
@@ -114,7 +122,7 @@
                     <label for="status_id">Status</label>
                     <select name="status_id" id="status_id"
                         class="form-control @error('status_id') is-invalid @enderror"
-                        {{ $canUpdate($task) ? '' : 'disabled' }}>
+                        @if ($canUpdateFieldStatus) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                         <option value="">-- Select Status --</option>
                         @foreach ($statuses as $value => $name)
                             <option value="{{ $value }}"
@@ -133,7 +141,7 @@
                     <input type="date" name="start_date" id="start_date"
                         class="form-control @error('start_date') is-invalid @enderror"
                         value="{{ old('start_date', $task->start_date ?? '') }}"
-                        {{ $canUpdate($task) ? '' : 'disabled' }}>
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                     @error('start_date')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -145,7 +153,7 @@
                     <input type="date" name="due_date" id="due_date"
                         class="form-control @error('due_date') is-invalid @enderror"
                         value="{{ old('due_date', $task->due_date ?? '') }}"
-                        {{ $canUpdate($task) ? '' : 'disabled' }}>
+                        @if ($canUpdateField) disabled style="background:#454e55;cursor:not-allowed;" @endif>
                     @error('due_date')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -153,10 +161,12 @@
             </div>
         </div>
         <div class="card-footer text-center">
-            @if ($canUpdate($task))
-                <button type="submit"
-                    class="btn btn-{{ $isCreate ? 'success' : 'warning' }}">{{ $isCreate ? 'Create Task' : 'Update Task' }}</button>
-            @endif
+            <div class="card-footer text-center">
+                @if (!$canUpdateFieldStatus)
+                    <button type="submit"
+                        class="btn btn-{{ $isCreate ? 'success' : 'warning' }}">{{ $isCreate ? 'Create Task' : 'Update Task' }}</button>
+                @endif
+            </div>
         </div>
     </div>
 </form>

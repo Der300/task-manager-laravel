@@ -110,8 +110,12 @@ class TaskController extends Controller
     public function update(UpdateTaskRequest $request, Task $task)
     {
         $this->authorize('update', $task);
-        $data = $request->validated();
         $user = Auth::user();
+        if ($user->hasRole('member')) {
+            $data = $request->only('status');
+        } else {
+            $data = $request->validated();
+        }
         try {
 
             $task->update($data);

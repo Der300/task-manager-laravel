@@ -138,52 +138,5 @@ class ViewServiceProvider extends ServiceProvider
                 'canUpdate' => $canUpdate,
             ]);
         });
-
-        view()->composer('tasks.*', function ($view) {
-            $user = Auth::user();
-
-            $roleAboveMember = $user ? $user->hasAnyRole(['admin', 'super-admin', 'manager', 'leader']) : false;
-
-            $canSoftDel = function ($item) use ($user) {
-                if (!$user || !$item) return false;
-
-                if ($user->hasAnyRole(['admin', 'super-admin', 'manager'])) return true;
-
-                if ($user->hasRole('leader') && $user->id === $item->assigned_to) return true;
-
-                return false;
-            };
-
-            $roleAboveManager = $user ? $user->hasAnyRole(['admin', 'super-admin']) : false;
-
-            $exceptClient = !$user->hasRole('client');
-
-            $canUpdate = function ($item) use ($user, $roleAboveMember) {
-                if ($user->hasAnyRole(['admin', 'super-admin','manager'])) return true;
-                if ($user->hasAnyRole(['member','leader']) && $user->id === $item->assigned_to) return true;
-                return false;
-            };
-
-            $canUploadSoftDelFile = function ($item) use ($user) {
-                if (!$user || !$item) return false;
-
-                if ($user->hasAnyRole(['admin', 'super-admin'])) return true;
-
-                if ($user->hasRole('manager') && $user->id === $item->project?->assigned_to) return true;
-
-                if ($user->hasAnyRole(['leader', 'member']) && $user->id === $item->assigned_to) return true;
-
-                return false;
-            };
-
-            $view->with([
-                'roleAboveMember' => $roleAboveMember,
-                'roleAboveManager' => $roleAboveManager,
-                'canSoftDel' => $canSoftDel,
-                'exceptClient' => $exceptClient,
-                'canUpdate' => $canUpdate,
-                'canUploadSoftDelFile' => $canUploadSoftDelFile,
-            ]);
-        });
     }
 }

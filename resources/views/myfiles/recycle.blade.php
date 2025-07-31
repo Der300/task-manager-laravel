@@ -36,7 +36,8 @@
                                     <td class="align-middle">{{ $item->updated_at->format('d/m/Y H:i') }}</td>
                                     <td class="align-middle">
                                         <div class="d-flex align-items-center justify-content-center">
-                                            @can('forceDelete', $item)
+                                            @can('file.force-delete')
+                                            {{-- @can gọi từ permission của user --}}
                                                 <form action="{{ route('myfiles.force-delete', ['file' => $item->id]) }}"
                                                     method="POST" class="mx-1"
                                                     onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Move to Recycle',text: 'Are you sure you want to move to recycle?'})">

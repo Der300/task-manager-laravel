@@ -40,7 +40,7 @@
                                 <td class="align-middle">
                                     {{ $item->assignedUser->name }}
                                 </td>
-                                
+
                                 <td class="align-middle">
                                     {{ \Carbon\Carbon::parse($item->due_date)?->format('d/m/Y') ?? '--' }}
                                 </td>
@@ -49,19 +49,17 @@
                                 </td>
                                 <td class="align-middle text-center">
                                     <div class="d-flex align-items-center justify-content-center">
-                                        @if ($roleAboveManager)
-                                            <form action="{{ route('tasks.force-delete', $item) }}" method="POST"
-                                                class="mx-1"
-                                                onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Delete',text: 'Are you sure you want to delete?',confirmButtonText: 'delete'})">
-                                                @csrf
-                                                @method('DELETE')
-                                                <span data-toggle="tooltip" data-placement="top" title="Delete">
-                                                    <button class="btn btn-danger btn-sm px-2 py-1">
-                                                        <i class="fa fa-trash" aria-hidden="true"></i>
-                                                    </button>
-                                                </span>
-                                            </form>
-                                        @endif
+                                        <form action="{{ route('tasks.force-delete', $item) }}" method="POST"
+                                            class="mx-1"
+                                            onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Delete',text: 'Are you sure you want to delete?',confirmButtonText: 'delete'})">
+                                            @csrf
+                                            @method('DELETE')
+                                            <span data-toggle="tooltip" data-placement="top" title="Delete">
+                                                <button class="btn btn-danger btn-sm px-2 py-1">
+                                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </span>
+                                        </form>
                                         <form action="{{ route('tasks.restore', $item) }}" method="POST" class="mx-1"
                                             onsubmit="return swalConfirmWithForm(event, {title: 'Confirm Restore',text: 'Are you sure you want to restore?',confirmButtonText: 'restore'})">
                                             @csrf

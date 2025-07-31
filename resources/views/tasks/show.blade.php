@@ -22,7 +22,7 @@
                 </div>
                 <div id="fileCollapse" class="collapse">
                     <div class="card-body" style="height: 300px; overflow-y:auto">
-                        @if ($canUploadSoftDelFile($task))
+                        @can('upload', $task)
                             <div class="card card-outline card-warning">
                                 <div class="card-header">
                                     <button class="btn btn-warning btn-sm" type="button" data-toggle="collapse"
@@ -50,7 +50,7 @@
                                     </div>
                                 </div>
                             </div>
-                        @endif
+                        @endcan
                         <div class="table-responsive">
                             <table class="table table-bordered mb-0" id="file-table">
                                 <thead class="table-dark text-center">
