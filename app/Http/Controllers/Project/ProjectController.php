@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Status;
 use App\Models\User;
 use App\Notifications\ProjectAssigned;
+use App\Notifications\ProjectForceDeleted;
 use App\Notifications\ProjectRestored;
 use App\Notifications\ProjectSoftDeleted;
 use App\Notifications\ProjectUpdated;
@@ -184,8 +185,11 @@ class ProjectController extends Controller
      */
     public function forceDelete(Project $project)
     {
+        $user = Auth::user();
         $result = $this->projectService->forceDeleteProject($project);
-
+        if ($user->id !== $project->assigned_to) {
+            $project->assignedUser?->notify(new ProjectForceDeleted($project, $user->name));
+        }
         if ($result['success']) {
             return back()->with('success', $result['message']);
         }

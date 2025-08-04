@@ -9,6 +9,8 @@ use App\Models\Task;
 use App\Models\Status;
 use App\Models\User;
 use App\Notifications\TaskAssigned;
+use App\Notifications\TaskForceDeleted;
+use App\Notifications\TaskRestored;
 use App\Notifications\TaskSoftDeleted;
 use App\Notifications\TaskUpdated;
 use App\Services\Comment\CommentService;
@@ -174,7 +176,7 @@ class TaskController extends Controller
             if ($task->trashed()) {
                 $task->restore();
                 if ($user->id !== $task->assigned_to) {
-                    $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
+                    $task->assignedUser?->notify(new TaskRestored($task, $user->name));
                 }
                 $this->fileService->restoreTaskFilesFromTrash($task->id);
                 return redirect()->route('tasks.index')->with('success', 'Task restored successfully.');
@@ -194,7 +196,7 @@ class TaskController extends Controller
         $user = Auth::user();
         if ($result['success']) {
             if ($user->id !== $task->assigned_to) {
-                $task->assignedUser?->notify(new TaskSoftDeleted($task, $user->name));
+                $task->assignedUser?->notify(new TaskForceDeleted($task, $user->name));
             }
             $this->fileService->deleteTaskFilesPermanently($task->id);
             return back()->with('success', $result['message']);
